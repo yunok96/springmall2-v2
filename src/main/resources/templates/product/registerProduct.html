@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>상품 등록</title>
+    <!-- Bootstrap css -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+</head>
+<body>
+<!-- Navbar -->
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container mt-5">
+    <h2 class="mb-4">상품 등록</h2>
+    <form th:action="@{/products}" method="post" enctype="multipart/form-data">
+        <!-- 상품명 -->
+        <div class="mb-3">
+            <label for="title" class="form-label">상품명</label>
+            <input type="text" class="form-control" id="title" name="title" placeholder="상품명을 입력하세요" required>
+        </div>
+
+        <!-- 설명 -->
+        <div class="mb-3">
+            <label for="description" class="form-label">설명</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="상품 설명을 입력하세요"></textarea>
+        </div>
+
+        <!-- 가격 -->
+        <div class="mb-3">
+            <label for="price" class="form-label">가격</label>
+            <input type="number" class="form-control" id="price" name="price" step="0.01" placeholder="가격을 입력하세요" required>
+        </div>
+
+        <!-- 재고 -->
+        <div class="mb-3">
+            <label for="stock" class="form-label">재고</label>
+            <input type="number" class="form-control" id="stock" name="stock" placeholder="재고 수량을 입력하세요" required>
+        </div>
+
+        <!-- 이미지 업로드 -->
+        <div class="mb-4">
+            <label for="image" class="form-label">상품 이미지</label>
+            <input class="form-control" type="file" id="image" name="image" accept="image/*">
+        </div>
+
+        <input type="file" onchange="getURL(this);">
+
+        <!-- 등록 버튼 -->
+        <button type="submit" class="btn btn-success">상품 등록</button>
+    </form>
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<!-- Bootstrap js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+<script th:src="@{/js/product/registerProduct.js}"></script>
+</body>
+</html>
