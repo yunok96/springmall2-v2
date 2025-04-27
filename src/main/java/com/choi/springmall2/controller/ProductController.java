@@ -1,6 +1,7 @@
 package com.choi.springmall2.controller;
 
 import com.choi.springmall2.domain.CustomUser;
+import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.service.ProductService;
 import com.choi.springmall2.service.S3Service;
@@ -11,10 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @AllArgsConstructor
@@ -33,24 +31,17 @@ public class ProductController {
     // 상품 등록 처리
     @PostMapping("/registerProduct")
     @PreAuthorize("hasRole('SELLER')")
-    public String registerProduct(@RequestParam String title,
-                                  @RequestParam String description,
-                                  @RequestParam Double price,
-                                  @RequestParam Integer stock,
+    public String registerProduct(
+            @RequestBody ProductDto productDto,
                                   Model model) {
         try {
-            Product product = new Product();
-            product.setTitle(title);
-            product.setDescription(description);
-            product.setPrice(price);
-            product.setStock(stock);
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             CustomUser user = (CustomUser) auth.getPrincipal();
             // sellerId는 현재 로그인된 사용자 정보를 통해 가져와야 함
 //            product.setSeller(getCurrentUserId());
 
-            productService.saveProduct(product);
+//            productService.saveProduct(product);
 
             model.addAttribute("message", "상품 등록 성공!");
             return "redirect:/productList"; // 상품 목록 페이지로 리디렉션

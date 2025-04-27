@@ -20,6 +20,4 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
-
-    private String imageUrl; // 상품 이미지 URL
 }

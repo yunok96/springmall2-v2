@@ -41,8 +41,14 @@
 
         <!-- 이미지 업로드 -->
         <div class="mb-4">
-            <label for="image" class="form-label">상품 이미지</label>
-            <input class="form-control" type="file" id="image" name="image" accept="image/*">
+            <label for="thumbnailImage" class="form-label">상품 썸네일 이미지</label>
+            <input class="form-control" type="file" id="thumbnailImage" name="image" accept="image/*">
+        </div>
+
+        <!-- 이미지 업로드 -->
+        <div class="mb-4">
+            <label for="contentImage" class="form-label">상품 내용 이미지</label>
+            <input class="form-control" type="file" id="contentImage" name="image" accept="image/*">
         </div>
 
         <input type="file" onchange="getURL(this);">
