@@ -7,6 +7,8 @@ import javax.swing.text.html.Option;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findById(int id);
+
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

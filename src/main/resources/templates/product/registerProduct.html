@@ -14,7 +14,7 @@
 
 <div class="container mt-5">
     <h2 class="mb-4">상품 등록</h2>
-    <form th:action="@{/products}" method="post" enctype="multipart/form-data">
+    <form id="registerProductForm" method="post" enctype="multipart/form-data">
         <!-- 상품명 -->
         <div class="mb-3">
             <label for="title" class="form-label">상품명</label>
@@ -39,22 +39,25 @@
             <input type="number" class="form-control" id="stock" name="stock" placeholder="재고 수량을 입력하세요" required>
         </div>
 
-        <!-- 이미지 업로드 -->
+        <!-- 썸네일 이미지 업로드 -->
         <div class="mb-4">
-            <label for="thumbnailImage" class="form-label">상품 썸네일 이미지</label>
-            <input class="form-control" type="file" id="thumbnailImage" name="image" accept="image/*">
+            <label for="thumbnailImageFile" class="form-label">상품 썸네일 이미지</label>
+            <input class="form-control" type="file" id="thumbnailImageFile" name="thumbnailImageFile"
+                   accept="image/*" onchange="uploadThumbnailImage(this)">
+            <img id="thumbnailPreview" src="#" alt="썸네일 미리보기" style="max-width: 200px; margin-top: 10px; display: none;">
+            <input type="hidden" id="thumbnailImageUrl" name="thumbnailImageUrl">
         </div>
 
-        <!-- 이미지 업로드 -->
+        <!-- 내용 이미지 업로드 -->
         <div class="mb-4">
-            <label for="contentImage" class="form-label">상품 내용 이미지</label>
-            <input class="form-control" type="file" id="contentImage" name="image" accept="image/*">
+            <label for="contentImageFile-1" class="form-label">상품 내용 이미지 1</label>
+            <input class="form-control" type="file" id="contentImageFile-1" name="contentImageFiles"
+                   accept="image/*" onchange="uploadContentImages(this)" data-index="1">
+            <div id="contentImagePreview-1" style="display: none; flex-wrap: wrap; margin-top: 10px;"></div>
+            <input type="hidden" id="contentImageUrl-1" name="contentImageUrls">
         </div>
 
-        <input type="file" onchange="getURL(this);">
-
-        <!-- 등록 버튼 -->
-        <button type="submit" class="btn btn-success">상품 등록</button>
+        <button type="button" class="btn btn-success" onclick="submitProduct()">상품 등록</button>
     </form>
 </div>
 

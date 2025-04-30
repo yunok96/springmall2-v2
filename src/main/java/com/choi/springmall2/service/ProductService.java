@@ -1,8 +1,10 @@
 package com.choi.springmall2.service;
 
+import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.domain.entity.ProductImage;
+import com.choi.springmall2.domain.entity.User;
 import com.choi.springmall2.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +19,21 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductImageService productImageService;
+    private final UserService userService;
 
     @Transactional
-    public ProductDto saveProduct(ProductDto productDto) {
+    public ProductDto saveProduct(ProductDto productDto, CustomUser customUser) {
+        // 사용자 정보 가져오기
+        int userId = customUser.getId();
+        User user = userService.getUserById(userId);
+
         // 상품 정보 저장
         Product product = new Product();
         product.setTitle(productDto.getTitle());
         product.setDescription(productDto.getDescription());
         product.setPrice(productDto.getPrice());
         product.setStock(productDto.getStock());
+        product.setSeller(user);
 
         product = productRepository.save(product);  // 상품 저장 후 반환된 product (id 자동 생성됨)
 

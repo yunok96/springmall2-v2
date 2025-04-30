@@ -21,6 +21,9 @@ public class ProductImage {
     @Column(nullable = false)
     private String imageUrl;
 
+    @Column(nullable = false)
+    private String imageName;
+
     @Column(nullable = false, length = 20)
     private String type;
     private int seq = 0;

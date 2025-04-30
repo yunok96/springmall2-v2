@@ -21,21 +21,22 @@ public class ProductImageService {
         List<ProductImage> productImages = new ArrayList<>();
 
         // 썸네일 이미지 처리 (순서대로 추가)
-        addProductImage(productDto.getThumbnailImageUrl(), product, "thumbnail", 0, productImages);
+//        addProductImage(productDto.getThumbnailImageUrl(), product, "thumbnail", 0, productImages);
 
         // 상품 내용 이미지 처리 (순서대로 추가)
-        List<String> contentImageUrls = productDto.getContentImageUrls();
-        for (int i = 0; i < contentImageUrls.size(); i++) {
-            addProductImage(contentImageUrls.get(i), product, "content", i + 1, productImages);
-        }
+//        List<String> contentImageUrls = productDto.getContentImageUrls();
+//        for (int i = 0; i < contentImageUrls.size(); i++) {
+//            addProductImage(contentImageUrls.get(i), product, "content", i + 1, productImages);
+//        }
 
         return productImages;
     }
 
-    private void addProductImage(String imageUrl, Product product, String type, int seq, List<ProductImage> productImages) {
+    private void addProductImage(String imageUrl, String imageName, Product product, String type, int seq, List<ProductImage> productImages) {
         ProductImage productImage = new ProductImage();
         productImage.setProduct(product);
         productImage.setImageUrl(imageUrl);
+        productImage.setImageName(imageName);
         productImage.setType(type);
         productImage.setSeq(seq);
 

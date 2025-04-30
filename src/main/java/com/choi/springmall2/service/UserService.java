@@ -6,6 +6,7 @@ import com.choi.springmall2.domain.dto.TokenDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
 import com.choi.springmall2.domain.entity.User;
 import com.choi.springmall2.error.exceptions.DuplicateUserException;
+import com.choi.springmall2.error.exceptions.UserNotFoundException;
 import com.choi.springmall2.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -61,5 +62,10 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
 
         return new TokenDto(accessToken, refreshToken);
+    }
+
+    public User getUserById(int id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
     }
 }

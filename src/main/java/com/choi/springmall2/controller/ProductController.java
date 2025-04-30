@@ -2,23 +2,31 @@ package com.choi.springmall2.controller;
 
 import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.ProductDto;
-import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.service.ProductService;
 import com.choi.springmall2.service.S3Service;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Controller
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class ProductController {
 
+    @Value("${bucket.product.temp.path}")
+    private String tempProductFilePath;
+    @Value("${bucket.product.real.path}")
+    private String realProductFilePath;
     private final ProductService productService;
     private final S3Service s3Service;
 
@@ -28,43 +36,48 @@ public class ProductController {
         return "product/registerProduct";
     }
 
-    // 상품 등록 처리
+    // 상품 등록 처리 (Presigned URL 방식)
     @PostMapping("/registerProduct")
     @PreAuthorize("hasRole('SELLER')")
-    public String registerProduct(
-            @RequestBody ProductDto productDto,
-                                  Model model) {
+    public String registerProductSubmit(
+            @ModelAttribute ProductDto productDto,
+            @RequestParam("contentImageUrls") String contentImageUrlsJson, // JSON 형태의 이미지 URL 리스트
+            Authentication authentication,
+            Model model) {
         try {
+            CustomUser customUser = (CustomUser) authentication.getPrincipal();
 
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            CustomUser user = (CustomUser) auth.getPrincipal();
-            // sellerId는 현재 로그인된 사용자 정보를 통해 가져와야 함
-//            product.setSeller(getCurrentUserId());
+            // JSON 형태의 contentImageUrls를 List<String>으로 변환
+            List<String> contentImageUrls = Arrays.stream(contentImageUrlsJson.substring(1, contentImageUrlsJson.length() - 1).split(","))
+                    .map(s -> s.trim().replaceAll("\"", ""))
+                    .collect(Collectors.toList());
+            productDto.setContentImageUrls(contentImageUrls);
 
-//            productService.saveProduct(product);
+            ProductDto savedProductDto = productService.saveProduct(productDto, customUser); // CustomUser 전달
+
+            // 상품 등록 후, 임시 파일을 실제 파일로 이동
+            for (String tempImageUrl : contentImageUrls) {
+                String filename = tempImageUrl.substring(tempImageUrl.lastIndexOf("/") + 1);
+                s3Service.moveFromTemp(tempProductFilePath + filename, realProductFilePath + filename);
+            }
+            String tempThumbFilename = productDto.getThumbnailImageUrl()
+                    .substring(productDto.getThumbnailImageUrl().lastIndexOf("/") + 1);
+            s3Service.moveFromTemp(tempProductFilePath + tempThumbFilename, realProductFilePath + tempThumbFilename);
 
             model.addAttribute("message", "상품 등록 성공!");
             return "redirect:/productList"; // 상품 목록 페이지로 리디렉션
         } catch (Exception e) {
+            log.error("상품 등록 중 오류 발생", e); // 스택트레이스를 로그에 포함
             model.addAttribute("message", "상품 등록 실패: " + e.getMessage());
             return "product/registerProduct"; // 다시 등록 폼을 보여줌
         }
     }
 
-    @GetMapping("/presignedUrlTest")
+    // 등록 전, 임시 파일 PreSigned URL 생성 요청 처리
+    @GetMapping("/getPreSignedUrl")
     @ResponseBody
-    String getURL(@RequestParam String filename){
-        String result = s3Service.createPresignedUrl("test/" + filename);
-        log.info(result);
-        return result;
-    }
-
-
-
-    // 현재 로그인한 사용자의 ID를 반환하는 메서드 (현재 로그인 정보는 SecurityContext에서 가져옴)
-    private Long getCurrentUserId() {
-        // 예시로 간단하게 "SELLER" 역할을 가진 사용자의 ID를 가져오는 코드 추가
-        // 실제로는 JWT나 Spring Security 컨텍스트를 사용하여 로그인된 사용자의 ID를 가져와야 합니다.
-        return 1L; // 예시 ID
+    public Map<String, String> getURL(@RequestParam String filename) {
+        String url = s3Service.createPreSignedUrl(tempProductFilePath + filename);
+        return Map.of("url", url);
     }
 }
