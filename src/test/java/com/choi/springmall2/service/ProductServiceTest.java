@@ -4,6 +4,7 @@ import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.domain.entity.ProductImage;
+import com.choi.springmall2.domain.entity.User;
 import com.choi.springmall2.domain.vo.FileVo;
 import com.choi.springmall2.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,8 @@ class ProductServiceTest {
     private ProductRepository productRepository;
     @Mock
     private ProductImageService productImageService;
+    @Mock
+    private UserService userService;
 
     @InjectMocks
     private ProductService productService;
@@ -45,10 +48,10 @@ class ProductServiceTest {
         productDto.setDescription("Test Description");
         productDto.setPrice(100.0);
         productDto.setStock(10);
-        productDto.setThumbnailImage(new FileVo("thumbnailName", "thumbnailUrl"));
+        productDto.setThumbnailImage(new FileVo("thumbnailName", "thumbnailKey"));
         productDto.setContentImages(Arrays.asList(
-                new FileVo("contentName1", "contentUrl1"),
-                new FileVo("contentName2", "contentUrl2")
+                new FileVo("contentName1", "contentKey1"),
+                new FileVo("contentName2", "contentKey2")
         ));
 
         Product product = new Product();
@@ -60,15 +63,15 @@ class ProductServiceTest {
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
         ProductImage mockThumbnailImage = new ProductImage();
-        mockThumbnailImage.setImageUrl("thumbnailUrl");
+        mockThumbnailImage.setImageKey("thumbnailKey");
         mockThumbnailImage.setImageName("thumbnailName");
 
         ProductImage mockContentImage1 = new ProductImage();
-        mockContentImage1.setImageUrl("contentUrl1");
+        mockContentImage1.setImageKey("contentKey1");
         mockContentImage1.setImageName("contentName1");
 
         ProductImage mockContentImage2 = new ProductImage();
-        mockContentImage2.setImageUrl("contentUrl2");
+        mockContentImage2.setImageKey("contentKey2");
         mockContentImage2.setImageName("contentName2");
 
         List<ProductImage> mockProductImages = Arrays.asList(mockThumbnailImage, mockContentImage1, mockContentImage2);
@@ -82,6 +85,7 @@ class ProductServiceTest {
                 "testPassword",
                 authorities
         );
+        when(userService.getUserById(999)).thenReturn(any(User.class));
 
         // when
         ProductDto result = productService.saveProduct(productDto, customUser);
@@ -92,7 +96,7 @@ class ProductServiceTest {
         assertEquals("Test Description", result.getDescription());
         assertEquals(100.0, result.getPrice());
         assertEquals(10, result.getStock());
-        assertEquals(new FileVo(mockThumbnailImage.getImageName(), mockThumbnailImage.getImageUrl()), result.getThumbnailImage());
+        assertEquals(new FileVo(mockThumbnailImage.getImageName(), mockThumbnailImage.getImageKey()), result.getThumbnailImage());
         assertEquals(2, result.getContentImages().size());  // content 이미지가 2개 있는지 체크
 
         // verify

@@ -19,6 +19,10 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class S3Service {
 
+    @Value("${bucket.product.temp.path}")
+    private String tempProductFilePath;
+    @Value("${bucket.product.real.path}")
+    private String realProductFilePath;
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
     @Value("${presigned.url.expiration}")
@@ -47,11 +51,14 @@ public class S3Service {
         }
     }
 
-    public void moveFromTemp(String tempKey, String finalKey) {
+    public void moveFromTemp(String fileKey) {
         // 파일 이동 전 경로 인자 검증
-        if (tempKey == null || finalKey == null || tempKey.isBlank() || finalKey.isBlank()) {
-            throw new IllegalArgumentException("S3 key must not be null or blank");
+        if (fileKey == null || fileKey.isBlank()) {
+            throw new IllegalArgumentException("file key must not be null or blank");
         }
+
+        String tempKey = tempProductFilePath + fileKey;
+        String finalKey = realProductFilePath + fileKey;
 
         try {
             // 복사 요청

@@ -22,14 +22,14 @@ public class ProductImageService {
         List<ProductImage> productImages = new ArrayList<>();
 
         // 썸네일 이미지 처리 (순서대로 추가)
-        addProductImage(productDto.getThumbnailImage().filePath()
+        addProductImage(productDto.getThumbnailImage().fileKey()
                 , productDto.getThumbnailImage().fileName()
                 , product, "thumbnail", 0, productImages);
 
         // 상품 내용 이미지 처리 (순서대로 추가)
         List<FileVo> contentImages = productDto.getContentImages();
         for (int i = 0; i < contentImages.size(); i++) {
-            addProductImage(contentImages.get(i).filePath()
+            addProductImage(contentImages.get(i).fileKey()
                     , contentImages.get(i).fileName()
                     , product, "content", i + 1, productImages);
         }
@@ -37,10 +37,10 @@ public class ProductImageService {
         return productImages;
     }
 
-    private void addProductImage(String imageUrl, String imageName, Product product, String type, int seq, List<ProductImage> productImages) {
+    private void addProductImage(String imageKey, String imageName, Product product, String type, int seq, List<ProductImage> productImages) {
         ProductImage productImage = new ProductImage();
         productImage.setProduct(product);
-        productImage.setImageUrl(imageUrl);
+        productImage.setImageKey(imageKey);
         productImage.setImageName(imageName);
         productImage.setType(type);
         productImage.setSeq(seq);

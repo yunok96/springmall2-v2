@@ -35,9 +35,6 @@ class S3ServiceTest {
     @Mock
     private S3Client s3Client;
 
-    private final String bucketName = "test-bucket";
-    private final long presignedUrlDuration = 60;
-
 
     @Test
     @DisplayName("PreSigned URL 생성 성공")
@@ -49,12 +46,14 @@ class S3ServiceTest {
         PresignedPutObjectRequest mockPreSignedRequest = mock(PresignedPutObjectRequest.class); // PresignedPutObjectRequest를 Mock으로 생성
         when(mockPreSignedRequest.url()).thenReturn(expectedUrl); // URL() 메서드가 expectedUrl 반환하도록 설정
 
+        String bucketName = "test-bucket";
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(path)
                 .build();
 
-        PutObjectPresignRequest mockPutObjectPresignRequest = PutObjectPresignRequest.builder()
+        long presignedUrlDuration = 60;
+        PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(presignedUrlDuration))
                 .putObjectRequest(putObjectRequest)
                 .build();
@@ -72,7 +71,7 @@ class S3ServiceTest {
 
     @Test
     @DisplayName("PreSigned URL 생성 시 S3 키가 null 또는 빈 문자열인 경우 IllegalArgumentException 발생")
-    void createPreSignedUrl_Exception() throws MalformedURLException {
+    void createPreSignedUrl_Exception() {
         // Given
         String path = "test/path/file.txt";
 
@@ -91,11 +90,10 @@ class S3ServiceTest {
     @DisplayName("임시 파일 이동 성공")
     void moveFromTemp_Success() {
         // Given
-        String tempKey = "temp/file.txt";
-        String finalKey = "final/file.txt";
+        String fileKey = "file.txt";
 
         // When
-        s3Service.moveFromTemp(tempKey, finalKey);
+        s3Service.moveFromTemp(fileKey);
 
         // Then
         verify(s3Client, times(1)).copyObject(any(CopyObjectRequest.class));
@@ -107,10 +105,10 @@ class S3ServiceTest {
     void moveFromTemp_IllegalArgumentException() {
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> s3Service.moveFromTemp(null, "final/file.txt"));
+                () -> s3Service.moveFromTemp(null));
 
         // Then
-        assertEquals("S3 key must not be null or blank", exception.getMessage());
+        assertEquals("file key must not be null or blank", exception.getMessage());
         verifyNoInteractions(s3Client);
     }
 
@@ -118,13 +116,12 @@ class S3ServiceTest {
     @DisplayName("임시 파일 복사 실패 시 S3FileOperationException 발생 > 파일 삭제 호출 안됨 확인")
     void moveFromTemp_S3FileOperationException() {
         // Given
-        String tempKey = "temp/file.txt";
-        String finalKey = "final/file.txt";
+        String fileKey = "file.txt";
         when(s3Client.copyObject(any(CopyObjectRequest.class))).thenThrow(S3Exception.builder().message("S3 복사 오류").build());
 
         // When
         S3FileOperationException exception = assertThrows(S3FileOperationException.class,
-                () -> s3Service.moveFromTemp(tempKey, finalKey));
+                () -> s3Service.moveFromTemp(fileKey));
 
         // Then
         assertEquals("임시 파일 복사 실패: S3 복사 오류", exception.getMessage());

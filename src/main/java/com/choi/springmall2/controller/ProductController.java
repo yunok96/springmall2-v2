@@ -12,14 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,8 +27,6 @@ public class ProductController {
 
     @Value("${bucket.product.temp.path}")
     private String tempProductFilePath;
-    @Value("${bucket.product.real.path}")
-    private String realProductFilePath;
     private final ProductService productService;
     private final S3Service s3Service;
 
@@ -52,11 +49,11 @@ public class ProductController {
             ProductDto savedProductDto = productService.saveProduct(productDto, customUser); // CustomUser 전달
 
             // 상품 등록 후, 임시 파일을 실제 파일로 이동
-            s3Service.moveFromTemp(tempProductFilePath + productDto.getThumbnailImage().filePath()
-                    , realProductFilePath + productDto.getThumbnailImage().filePath());
+            s3Service.moveFromTemp(productDto.getThumbnailImage().fileKey()
+            );
             for (FileVo tempContentImage : productDto.getContentImages()) {
-                s3Service.moveFromTemp(tempProductFilePath + tempContentImage.filePath()
-                        , realProductFilePath + tempContentImage.filePath());
+                s3Service.moveFromTemp(tempContentImage.fileKey()
+                );
             }
 
             return ResponseEntity.ok(savedProductDto);

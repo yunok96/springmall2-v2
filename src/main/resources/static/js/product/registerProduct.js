@@ -41,10 +41,12 @@ async function uploadThumbnailImage(input) {
 
             // 썸네일 미리보기 표시
             if (imageUrl) {
-                document.getElementById('thumbnailPreview').src = imageUrl;
+                const fileKey = imageUrl.split("/").pop();
+
+                document.getElementById('thumbnailPreview').src = imageUrl; // 미리보기 이미지 URL 설정. 내 서버 코드를 타지 않는 로직이기에 즉시 url 반영함.
                 document.getElementById('thumbnailPreview').style.display = 'block';
-                document.getElementById('thumbnailImageUrl').value = imageUrl;
                 document.getElementById('thumbnailImageName').value = file.name;
+                document.getElementById('thumbnailImageKey').value = fileKey;
             }
         }
     } catch (error) {
@@ -64,13 +66,15 @@ async function uploadContentImages(input) {
 
             // 썸네일 미리보기 표시
             if (imageUrl) {
-                const imageUrlInput = document.getElementById(`contentImageUrl-${index}`);
+                const fileKey = imageUrl.split("/").pop();
+
+                const imageKeyInput = document.getElementById(`contentImageKey-${index}`);
                 const imageNameInput = document.getElementById(`contentImageName-${index}`);
                 const previewElement = document.getElementById(`contentImagePreview-${index}`);
 
-                previewElement.src = imageUrl;
+                previewElement.src = imageUrl; // 미리보기 이미지 URL 설정. 내 서버 코드를 타지 않는 로직이기에 즉시 url 반영함.
                 previewElement.style.display = 'block';
-                imageUrlInput.value = imageUrl;
+                imageKeyInput.value = fileKey;
                 imageNameInput.value = file.name;
 
                 // 새로운 상품 내용 이미지 input 추가
@@ -109,7 +113,7 @@ function addContentImageInput(index) {
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="contentImageUrl-${index}" name="contentImageUrls">
+            <input type="hidden" id="contentImageKey-${index}" name="contentImageKeys">
             <input type="hidden" id="contentImageName-${index}" name="contentImageNames">
     `;
     const form = document.getElementById('registerProductForm');
@@ -126,7 +130,7 @@ function clearThumbnailImage() {
     document.getElementById('thumbnailPreview').style.display = 'none';
 
     // hidden 필드 값 초기화
-    document.getElementById('thumbnailImageUrl').value = '';
+    document.getElementById('thumbnailImageKey').value = '';
     document.getElementById('thumbnailImageName').value = '';
 }
 
@@ -148,7 +152,7 @@ function removeContentImage(index) {
     if (index === 1 && allGroups < 2) {
         document.getElementById(`contentImageFile-${index}`).value = '';
         document.getElementById(`contentImagePreview-${index}`).style.display = 'none';
-        document.getElementById(`contentImageUrl-${index}`).value = '';
+        document.getElementById(`contentImageKey-${index}`).value = '';
         document.getElementById(`contentImageName-${index}`).value = '';
     } else {
         container.remove(); // 해당 div 삭제
@@ -202,8 +206,8 @@ function resetContentImageIndices() {
         const preview = group.querySelector('img');
         preview.id = `contentImagePreview-${index}`;
 
-        const urlInput = group.querySelector('input[name="contentImageUrls"]');
-        urlInput.id = `contentImageUrl-${index}`;
+        const urlInput = group.querySelector('input[name="contentImageKeys"]');
+        urlInput.id = `contentImageKey-${index}`;
 
         const nameInput = group.querySelector('input[name="contentImageNames"]');
         nameInput.id = `contentImageName-${index}`;
@@ -228,12 +232,12 @@ document.getElementById('registerProductForm').addEventListener('submit', async 
 
     const contentImages = [];
     document.querySelectorAll('.content-image-group').forEach(group => {
-        const url = group.querySelector('input[name="contentImageUrls"]').value;
+        const url = group.querySelector('input[name="contentImageKeys"]').value;
         const name = group.querySelector('input[name="contentImageNames"]').value;
         if (url) {
             contentImages.push({
                 fileName: name,
-                filePath: url
+                fileKey: url
             });
         }
     });
@@ -245,7 +249,7 @@ document.getElementById('registerProductForm').addEventListener('submit', async 
         stock: document.getElementById('stock').value,
         thumbnailImage: {
             fileName: document.getElementById('thumbnailImageName').value,
-            filePath: document.getElementById('thumbnailImageUrl').value
+            fileKey: document.getElementById('thumbnailImageKey').value
         },
         contentImages
     };

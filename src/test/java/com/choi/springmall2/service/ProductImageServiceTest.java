@@ -35,10 +35,10 @@ class ProductImageServiceTest {
     void saveProductImages() {
         // given
         ProductDto productDto = new ProductDto();
-        productDto.setThumbnailImage(new FileVo("thumbnailName", "thumbnailUrl"));
+        productDto.setThumbnailImage(new FileVo("thumbnailName", "thumbnailKey"));
         productDto.setContentImages(Arrays.asList(
-                new FileVo("contentName1", "contentUrl1"),
-                new FileVo("contentName2", "contentUrl2")
+                new FileVo("contentName1", "contentKey1"),
+                new FileVo("contentName2", "contentKey2")
         ));
         Product product = new Product();  // 상품 객체 생성
 

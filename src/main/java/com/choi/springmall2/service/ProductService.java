@@ -41,21 +41,21 @@ public class ProductService {
         // 상품 이미지 저장
         List<ProductImage> productImages = productImageService.saveProductImages(productDto, product);  // 상품 이미지 저장
 
-        // 이미지 URL들을 ProductDto에 반영
+        // 이미지 키들을 ProductDto 에 반영
         if (!productImages.isEmpty()) {
             FileVo thumbnailImage = new FileVo(productImages.get(0).getImageName()
-                    , productImages.get(0).getImageUrl()); // 첫 번째 이미지를 썸네일로 세팅
+                    , productImages.get(0).getImageKey()); // 첫 번째 이미지를 썸네일로 세팅
             productDto.setThumbnailImage(thumbnailImage);
 
-            // 나머지 이미지는 contentImageUrls 에 추가
-            List<FileVo> imageUrls = new ArrayList<>();
+            // 나머지 이미지는 contentImageKeys 에 추가
+            List<FileVo> imageKeys = new ArrayList<>();
             for (int i = 1; i < productImages.size(); i++) { // 첫 번째 이미지는 제외
                 FileVo contentImage = new FileVo(productImages.get(i).getImageName()
-                        , productImages.get(i).getImageUrl());
+                        , productImages.get(i).getImageKey());
 
-                imageUrls.add(contentImage);
+                imageKeys.add(contentImage);
             }
-            productDto.setContentImages(imageUrls);
+            productDto.setContentImages(imageKeys);
         }
 
         return productDto;
