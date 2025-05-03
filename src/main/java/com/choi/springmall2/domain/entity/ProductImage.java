@@ -3,13 +3,15 @@ package com.choi.springmall2.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
-public class ProductImage {
+public class ProductImage extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -19,7 +21,7 @@ public class ProductImage {
     private Product product;
 
     @Column(nullable = false)
-    private String imageUrl;
+    private String imageKey;
 
     @Column(nullable = false)
     private String imageName;
@@ -27,5 +29,4 @@ public class ProductImage {
     @Column(nullable = false, length = 20)
     private String type;
     private int seq = 0;
-    private LocalDateTime createdAt = LocalDateTime.now();
 }
