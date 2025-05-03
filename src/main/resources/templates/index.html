@@ -7,66 +7,68 @@
     <!-- Bootstrap css -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <!-- Navbar -->
     <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-    <div class="container mt-4">
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div class="col">
-                <div class="card h-100">
-                    <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
-                    <div class="card-body">
-                        <h5 class="card-title">상품 이름</h5>
-                        <p class="card-text">상품 설명입니다. 간단한 소개를 적을 수 있어요.</p>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">₩ 29,000</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card h-100">
-                    <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
-                    <div class="card-body">
-                        <h5 class="card-title">상품 이름</h5>
-                        <p class="card-text">다른 상품 설명도 여기!</p>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">₩ 45,000</small>
+    <main class="container mt-5 flex-grow-1">
+        <div class="container mt-4">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
+                        <div class="card-body">
+                            <h5 class="card-title">상품 이름</h5>
+                            <p class="card-text">상품 설명입니다. 간단한 소개를 적을 수 있어요.</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">₩ 29,000</small>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col">
-                <div class="card h-100">
-                    <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
-                    <div class="card-body">
-                        <h5 class="card-title">상품 이름</h5>
-                        <p class="card-text">다른 상품 설명도 여기!</p>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">₩ 45,000</small>
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
+                        <div class="card-body">
+                            <h5 class="card-title">상품 이름</h5>
+                            <p class="card-text">다른 상품 설명도 여기!</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">₩ 45,000</small>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col">
-                <div class="card h-100">
-                    <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
-                    <div class="card-body">
-                        <h5 class="card-title">상품 이름</h5>
-                        <p class="card-text">다른 상품 설명도 여기!</p>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">₩ 45,000</small>
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
+                        <div class="card-body">
+                            <h5 class="card-title">상품 이름</h5>
+                            <p class="card-text">다른 상품 설명도 여기!</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">₩ 45,000</small>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="https://placehold.co/300x200" class="card-img-top" alt="상품 이미지">
+                        <div class="card-body">
+                            <h5 class="card-title">상품 이름</h5>
+                            <p class="card-text">다른 상품 설명도 여기!</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">₩ 45,000</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer th:replace="~{fragments/footer :: footer}"></footer>

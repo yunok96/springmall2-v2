@@ -3,6 +3,7 @@ package com.choi.springmall2.service;
 import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.domain.entity.ProductImage;
+import com.choi.springmall2.domain.vo.FileVo;
 import com.choi.springmall2.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,17 @@ public class ProductImageService {
         List<ProductImage> productImages = new ArrayList<>();
 
         // 썸네일 이미지 처리 (순서대로 추가)
-//        addProductImage(productDto.getThumbnailImageUrl(), product, "thumbnail", 0, productImages);
+        addProductImage(productDto.getThumbnailImage().filePath()
+                , productDto.getThumbnailImage().fileName()
+                , product, "thumbnail", 0, productImages);
 
         // 상품 내용 이미지 처리 (순서대로 추가)
-//        List<String> contentImageUrls = productDto.getContentImageUrls();
-//        for (int i = 0; i < contentImageUrls.size(); i++) {
-//            addProductImage(contentImageUrls.get(i), product, "content", i + 1, productImages);
-//        }
+        List<FileVo> contentImages = productDto.getContentImages();
+        for (int i = 0; i < contentImages.size(); i++) {
+            addProductImage(contentImages.get(i).filePath()
+                    , contentImages.get(i).fileName()
+                    , product, "content", i + 1, productImages);
+        }
 
         return productImages;
     }

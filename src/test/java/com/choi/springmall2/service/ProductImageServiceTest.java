@@ -3,6 +3,7 @@ package com.choi.springmall2.service;
 import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.domain.entity.ProductImage;
+import com.choi.springmall2.domain.vo.FileVo;
 import com.choi.springmall2.repository.ProductImageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,12 +35,13 @@ class ProductImageServiceTest {
     void saveProductImages() {
         // given
         ProductDto productDto = new ProductDto();
-        productDto.setThumbnailImageUrl("thumbnailUrl");
-        productDto.setContentImageUrls(Arrays.asList("contentUrl1", "contentUrl2"));
-
+        productDto.setThumbnailImage(new FileVo("thumbnailName", "thumbnailUrl"));
+        productDto.setContentImages(Arrays.asList(
+                new FileVo("contentName1", "contentUrl1"),
+                new FileVo("contentName2", "contentUrl2")
+        ));
         Product product = new Product();  // 상품 객체 생성
 
-        // 이미지 저장 가짜 동작 설정
         when(productImageRepository.save(any(ProductImage.class))).thenReturn(new ProductImage());
 
         // when

@@ -5,7 +5,6 @@ import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
-import com.choi.springmall2.error.exceptions.DuplicateUserException;
 import com.choi.springmall2.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,13 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
 
@@ -31,8 +31,6 @@ import java.util.Map;
 @Slf4j
 public class UserController {
 
-//    private final AuthenticationManager authenticationManager;
-//    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
 
     // 회원가입 페이지로 이동

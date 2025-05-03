@@ -1,5 +1,6 @@
 package com.choi.springmall2.domain.dto;
 
+import com.choi.springmall2.domain.vo.FileVo;
 import lombok.Getter;
 import lombok.Setter;
 

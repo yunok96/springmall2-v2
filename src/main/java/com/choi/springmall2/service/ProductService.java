@@ -5,6 +5,7 @@ import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.entity.Product;
 import com.choi.springmall2.domain.entity.ProductImage;
 import com.choi.springmall2.domain.entity.User;
+import com.choi.springmall2.domain.vo.FileVo;
 import com.choi.springmall2.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,14 +43,19 @@ public class ProductService {
 
         // 이미지 URL들을 ProductDto에 반영
         if (!productImages.isEmpty()) {
-            productDto.setThumbnailImageUrl(productImages.get(0).getImageUrl()); // 첫 번째 이미지를 썸네일로 세팅
+            FileVo thumbnailImage = new FileVo(productImages.get(0).getImageName()
+                    , productImages.get(0).getImageUrl()); // 첫 번째 이미지를 썸네일로 세팅
+            productDto.setThumbnailImage(thumbnailImage);
 
-            // 나머지 이미지는 contentImageUrls에 추가
-            List<String> imageUrls = new ArrayList<>();
-            for (int i = 1; i < productImages.size(); i++) {  // 첫 번째 이미지는 제외하고
-                imageUrls.add(productImages.get(i).getImageUrl());
+            // 나머지 이미지는 contentImageUrls 에 추가
+            List<FileVo> imageUrls = new ArrayList<>();
+            for (int i = 1; i < productImages.size(); i++) { // 첫 번째 이미지는 제외
+                FileVo contentImage = new FileVo(productImages.get(i).getImageName()
+                        , productImages.get(i).getImageUrl());
+
+                imageUrls.add(contentImage);
             }
-            productDto.setContentImageUrls(imageUrls);
+            productDto.setContentImages(imageUrls);
         }
 
         return productDto;

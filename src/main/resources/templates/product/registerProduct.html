@@ -8,58 +8,89 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <!-- Navbar -->
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-<div class="container mt-5">
-    <h2 class="mb-4">상품 등록</h2>
-    <form id="registerProductForm" method="post" enctype="multipart/form-data">
-        <!-- 상품명 -->
-        <div class="mb-3">
-            <label for="title" class="form-label">상품명</label>
-            <input type="text" class="form-control" id="title" name="title" placeholder="상품명을 입력하세요" required>
-        </div>
+<main class="container mt-5 flex-grow-1">
+    <div class="container mt-5">
+        <h2 class="mb-4">상품 등록</h2>
+        <form id="registerProductForm" method="post" enctype="multipart/form-data">
+            <!-- 상품명 -->
+            <div class="mb-3">
+                <label for="title" class="form-label">상품명</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="상품명을 입력하세요" required>
+            </div>
 
-        <!-- 설명 -->
-        <div class="mb-3">
-            <label for="description" class="form-label">설명</label>
-            <textarea class="form-control" id="description" name="description" rows="3" placeholder="상품 설명을 입력하세요"></textarea>
-        </div>
+            <!-- 설명 -->
+            <div class="mb-3">
+                <label for="description" class="form-label">설명</label>
+                <textarea class="form-control" id="description" name="description" rows="3" placeholder="상품 설명을 입력하세요"></textarea>
+            </div>
 
-        <!-- 가격 -->
-        <div class="mb-3">
-            <label for="price" class="form-label">가격</label>
-            <input type="number" class="form-control" id="price" name="price" step="0.01" placeholder="가격을 입력하세요" required>
-        </div>
+            <!-- 가격 -->
+            <div class="mb-3">
+                <label for="price" class="form-label">가격</label>
+                <input type="number" class="form-control" id="price" name="price" step="0.01" placeholder="가격을 입력하세요" required>
+            </div>
 
-        <!-- 재고 -->
-        <div class="mb-3">
-            <label for="stock" class="form-label">재고</label>
-            <input type="number" class="form-control" id="stock" name="stock" placeholder="재고 수량을 입력하세요" required>
-        </div>
+            <!-- 재고 -->
+            <div class="mb-3">
+                <label for="stock" class="form-label">재고</label>
+                <input type="number" class="form-control" id="stock" name="stock" placeholder="재고 수량을 입력하세요" required>
+            </div>
 
-        <!-- 썸네일 이미지 업로드 -->
-        <div class="mb-4">
-            <label for="thumbnailImageFile" class="form-label">상품 썸네일 이미지</label>
-            <input class="form-control" type="file" id="thumbnailImageFile" name="thumbnailImageFile"
-                   accept="image/*" onchange="uploadThumbnailImage(this)">
-            <img id="thumbnailPreview" src="#" alt="썸네일 미리보기" style="max-width: 200px; margin-top: 10px; display: none;">
-            <input type="hidden" id="thumbnailImageUrl" name="thumbnailImageUrl">
-        </div>
+            <!-- 썸네일 이미지 업로드 -->
+            <div class="mb-4">
+                <label for="thumbnailImageFile" class="form-label">상품 썸네일 이미지</label>
+                <div class="row align-items-start">
+                    <div class="col-md-6">
+                        <input class="form-control" type="file" id="thumbnailImageFile" name="thumbnailImageFile"
+                               accept="image/*" onchange="uploadThumbnailImage(this)">
+                    </div>
+                    <div class="col-md-6 d-flex">
+                        <img id="thumbnailPreview" src="#" alt="썸네일 미리보기"
+                             style="max-width: 200px; display: none; margin-right: 10px;">
 
-        <!-- 내용 이미지 업로드 -->
-        <div class="mb-4">
-            <label for="contentImageFile-1" class="form-label">상품 내용 이미지 1</label>
-            <input class="form-control" type="file" id="contentImageFile-1" name="contentImageFiles"
-                   accept="image/*" onchange="uploadContentImages(this)" data-index="1">
-            <div id="contentImagePreview-1" style="display: none; flex-wrap: wrap; margin-top: 10px;"></div>
-            <input type="hidden" id="contentImageUrl-1" name="contentImageUrls">
-        </div>
+                        <div class="d-flex flex-column">
+                            <button type="button" class="btn btn-danger btn-sm remove-btn"
+                                    onclick="clearThumbnailImage()">×</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="thumbnailImageUrl" name="thumbnailImageUrl">
+                <input type="hidden" id="thumbnailImageName" name="thumbnailImageName">
+            </div>
 
-        <button type="button" class="btn btn-success" onclick="submitProduct()">상품 등록</button>
-    </form>
-</div>
+            <div class="mb-4 content-image-group">
+                <label for="contentImageFile-1" class="form-label">상품 내용 이미지 1</label>
+                <div class="row align-items-start">
+                    <div class="col-md-6">
+                        <input class="form-control" type="file" id="contentImageFile-1" name="contentImageFiles"
+                               accept="image/*" onchange="uploadContentImages(this)" data-index="1">
+                    </div>
+                    <div class="col-md-6 d-flex">
+                        <img id="contentImagePreview-1" src="#" alt="내용 미리보기"
+                             style="max-width: 200px; display: none; margin-right: 10px;">
+
+                        <div class="d-flex flex-column">
+                            <button type="button" class="btn btn-secondary btn-sm mb-1 up-btn"
+                                    onclick="moveContentImage(1, 'up')">↑</button>
+                            <button type="button" class="btn btn-secondary btn-sm mb-1 down-btn"
+                                    onclick="moveContentImage(1, 'down')">↓</button>
+                            <button type="button" class="btn btn-danger btn-sm remove-btn"
+                                    onclick="removeContentImage(1)">×</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="contentImageUrl-1" name="contentImageUrls">
+                <input type="hidden" id="contentImageName-1" name="contentImageNames">
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-success">상품 등록</button>
+        </form>
+    </div>
+</main>
 
 <!-- Footer -->
 <footer th:replace="~{fragments/footer :: footer}"></footer>

@@ -1,8 +1,6 @@
 package com.choi.springmall2.error.handler;
 
-import com.choi.springmall2.error.exceptions.DuplicateUserException;
-import com.choi.springmall2.error.exceptions.JWTExpirationException;
-import com.choi.springmall2.error.exceptions.UserNotFoundException;
+import com.choi.springmall2.error.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -59,6 +57,19 @@ public class CustomExceptionHandler {
         logger.error("JWT 만료: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 만료되었습니다. 새로운 토큰을 요청하십시오.");
     }
+
+    @ExceptionHandler(PreSignedUrlCreationException.class)
+    public ResponseEntity<?> handlePreSignedUrlCreationException(PreSignedUrlCreationException ex) {
+        logger.error("Pre-signed URL 생성 중 오류 발생: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("파일 저장 중 오류가 발생했습니다.");
+    }
+
+    @ExceptionHandler(S3FileOperationException.class)
+    public ResponseEntity<?> handleS3FileOperationException(S3FileOperationException ex) {
+        logger.error("클라우드 파일 처리 중 오류 발생: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 파일 처리 중 오류가 발생했습니다.");
+    }
+
 
     // 최종 fallback 예외 처리
     @ExceptionHandler(Exception.class)
