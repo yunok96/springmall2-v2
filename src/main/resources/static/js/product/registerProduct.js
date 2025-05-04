@@ -43,6 +43,17 @@ async function uploadThumbnailImage(input) {
             if (imageUrl) {
                 const fileKey = imageUrl.split("/").pop();
 
+                // 임시 파일 key 를 Redis 에 저장
+                const redisFileKeyResponse = await fetch('/saveTempFileKey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileKey: fileKey })
+                })
+                if (!redisFileKeyResponse.ok) {
+                    const errorMessage = await redisFileKeyResponse.text();
+                    console.error(`Redis 파일 키 저장 실패 : ${errorMessage}`)
+                }
+
                 document.getElementById('thumbnailPreview').src = imageUrl; // 미리보기 이미지 URL 설정. 내 서버 코드를 타지 않는 로직이기에 즉시 url 반영함.
                 document.getElementById('thumbnailPreview').style.display = 'block';
                 document.getElementById('thumbnailImageName').value = file.name;
@@ -67,6 +78,17 @@ async function uploadContentImages(input) {
             // 썸네일 미리보기 표시
             if (imageUrl) {
                 const fileKey = imageUrl.split("/").pop();
+
+                // 임시 파일 key 를 Redis 에 저장
+                const redisFileKeyResponse = await fetch('/saveTempFileKey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileKey: fileKey })
+                })
+                if (!redisFileKeyResponse.ok) {
+                    const errorMessage = await redisFileKeyResponse.text();
+                    console.error(`Redis 파일 키 저장 실패 : ${errorMessage}`)
+                }
 
                 const imageKeyInput = document.getElementById(`contentImageKey-${index}`);
                 const imageNameInput = document.getElementById(`contentImageName-${index}`);

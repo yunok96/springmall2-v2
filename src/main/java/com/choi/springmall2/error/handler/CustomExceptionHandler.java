@@ -70,6 +70,11 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 파일 처리 중 오류가 발생했습니다.");
     }
 
+    @ExceptionHandler(RedisSaveException.class)
+    public ResponseEntity<?> handleRedisSaveException(RedisSaveException ex) {
+        logger.error("Redis 처리 중 오류 발생: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Redis 처리 중 오류가 발생했습니다.");
+    }
 
     // 최종 fallback 예외 처리
     @ExceptionHandler(Exception.class)

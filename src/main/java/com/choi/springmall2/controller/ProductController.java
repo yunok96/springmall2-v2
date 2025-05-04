@@ -4,6 +4,7 @@ import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.ProductDto;
 import com.choi.springmall2.domain.vo.FileVo;
 import com.choi.springmall2.service.ProductService;
+import com.choi.springmall2.service.RedisFileKeyService;
 import com.choi.springmall2.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,11 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.UUID;
@@ -29,6 +28,7 @@ public class ProductController {
     private String tempProductFilePath;
     private final ProductService productService;
     private final S3Service s3Service;
+    private final RedisFileKeyService redisFileKeyService;
 
     @GetMapping("/registerProduct")
     @PreAuthorize("hasRole('SELLER')")
@@ -70,6 +70,17 @@ public class ProductController {
         String filename = payload.get("fileName");
         String uniqueFileName = UUID.randomUUID() + "_" + filename;
         String url = s3Service.createPreSignedUrl(tempProductFilePath + uniqueFileName);
+
         return Map.of("url", url);
+    }
+
+    // 임시 등록한 file key 를 Redis 에 저장
+    @PostMapping("/saveTempFileKey")
+    @ResponseBody
+    public ResponseEntity<?> saveTempFileKey(@RequestBody Map<String, String> payload) {
+        String fileKey = payload.get("fileKey");
+        redisFileKeyService.saveTempFileKey(fileKey); // Redis 에 저장
+
+        return ResponseEntity.ok("파일 키 저장 성공");
     }
 }
