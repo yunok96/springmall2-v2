@@ -1,5 +1,3 @@
-로그 테스트용
-
 name: Build and deploy JAR app to Azure Web App - springmall2
 
 on:
