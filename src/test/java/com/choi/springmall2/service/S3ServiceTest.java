@@ -26,15 +26,16 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class S3ServiceTest {
-    @InjectMocks
-    private S3Service s3Service;
 
     @Mock
     private S3Presigner s3Presigner;
-
+    @Mock
+    private RedisFileKeyService redisFileKeyService;
     @Mock
     private S3Client s3Client;
 
+    @InjectMocks
+    private S3Service s3Service;
 
     @Test
     @DisplayName("PreSigned URL 생성 성공")
