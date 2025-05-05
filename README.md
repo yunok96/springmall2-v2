@@ -1,6 +1,6 @@
 # Springmall2
 
-springmall2-ghgvedckerfaaae3.koreacentral-01.azurewebsites.net
+https://springmall2-ghgvedckerfaaae3.koreacentral-01.azurewebsites.net
 
 **간단한 쇼핑몰 프로젝트**
 
