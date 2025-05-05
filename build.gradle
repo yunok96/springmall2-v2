@@ -51,3 +51,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// github action - prevent generate plain jar
+jar {
+    enabled = false
+}
