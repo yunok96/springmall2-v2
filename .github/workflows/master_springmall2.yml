@@ -1,5 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+로그 테스트용
 
 name: Build and deploy JAR app to Azure Web App - springmall2
 
@@ -30,11 +29,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: List contents of build/libs
+        run: ls -l build/libs  # 디렉토리 내용 출력
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/build/libs/springmall2-*.jar'
+          path: '${{ github.workspace }}/build/libs/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
@@ -65,5 +67,4 @@ jobs:
         with:
           app-name: 'springmall2'
           slot-name: 'Production'
-          package: '${{ github.workspace }}/build/libs/springmall2-*.jar'
-          
+          package: '*.jar'
