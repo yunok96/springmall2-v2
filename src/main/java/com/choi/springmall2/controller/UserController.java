@@ -66,7 +66,7 @@ public class UserController {
     // 로그인 처리 api
     @PostMapping("/api/login")
     @ResponseBody
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
+    public ResponseEntity<?> apiLogin(@RequestBody LoginRequestDto request, HttpServletResponse response) {
         TokenDto tokenDto = userService.login(request.getEmail(), request.getPassword());
 
         // 토큰을 HttpOnly 쿠키에 저장

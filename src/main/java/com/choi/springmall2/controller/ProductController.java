@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,18 +49,22 @@ public class ProductController {
 
             ProductDto savedProductDto = productService.saveProduct(productDto, customUser); // CustomUser 전달
 
-            // 상품 등록 후, 임시 파일을 실제 파일로 이동
-            s3Service.moveFromTemp(productDto.getThumbnailImage().fileKey()
-            );
-            for (FileVo tempContentImage : productDto.getContentImages()) {
-                s3Service.moveFromTemp(tempContentImage.fileKey()
-                );
+            FileVo thumbnailImage = productDto.getThumbnailImage();
+            if (thumbnailImage != null) {
+                s3Service.moveFromTemp(thumbnailImage.fileKey()); // 상품 등록 후, 임시 파일을 실제 파일로 이동
+            }
+
+            List<FileVo> contentImages = productDto.getContentImages();
+            if (contentImages != null) {
+                for (FileVo tempContentImage : contentImages) {
+                    s3Service.moveFromTemp(tempContentImage.fileKey()); // 상품 등록 후, 임시 파일을 실제 파일로 이동
+                }
             }
 
             return ResponseEntity.ok(savedProductDto);
         } catch (Exception e) {
             log.error("상품 등록 중 오류 발생", e); // 스택트레이스를 로그에 포함
-            return ResponseEntity.internalServerError().body("상품 등록 실패: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("상품 등록 실패");
         }
     }
 
