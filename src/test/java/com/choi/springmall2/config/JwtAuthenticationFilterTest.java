@@ -39,7 +39,7 @@ class JwtAuthenticationFilterTest {
         when(jwtTokenProvider.getAuthentication(validAccessToken)).thenReturn(auth);
 
         // when
-//        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
 
         // then
         verify(jwtTokenProvider).getAuthentication(validAccessToken);
