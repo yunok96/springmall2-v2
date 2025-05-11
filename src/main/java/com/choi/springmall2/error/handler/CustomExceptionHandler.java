@@ -76,6 +76,22 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Redis 처리 중 오류가 발생했습니다.");
     }
 
+    @ExceptionHandler(ProductDetailNotFoundException.class)
+    public String handleProductDetailNotFound(ProductDetailNotFoundException ex, Model model, HttpServletRequest request, HttpServletResponse response) {
+        logger.error("상품 상세 조회 실패: {}", ex.getMessage());
+
+        model.addAttribute("message", ex.getMessage());
+        model.addAttribute("exception", ex.getClass().getSimpleName());
+        model.addAttribute("status", HttpStatus.NOT_FOUND.value());
+        model.addAttribute("path", request.getRequestURI());
+        model.addAttribute("error", ex.getMessage());
+        model.addAttribute("message", "상품을 찾을 수 없습니다.");
+        model.addAttribute("detail", ex.getMessage());
+        response.setStatus(HttpStatus.NOT_FOUND.value());
+
+        return "error/error";
+    }
+
     // 최종 fallback 예외 처리
     @ExceptionHandler(Exception.class)
     public String handleViewException(Exception ex, Model model, HttpServletRequest request, HttpServletResponse response) {

@@ -9,11 +9,13 @@ import com.choi.springmall2.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -88,4 +90,22 @@ public class ProductController {
 
         return ResponseEntity.ok("파일 키 저장 성공");
     }
+
+    // 상품 목록 조회
+    @GetMapping("/product/list")
+    public String getProductList(Model model,
+                                 @RequestParam(value = "page", defaultValue = "1") int page,
+                                 @RequestParam(value = "size", defaultValue = "10") int size) {
+        // 상품 목록 조회
+        Page<ProductDto> productPage = productService.getProductsPage(page, size);
+
+        // 모델에 데이터 추가
+        model.addAttribute("productList", productPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", productPage.getTotalPages());
+
+        return "product/list"; // Thymeleaf 템플릿 (product/list.html)로 반환
+    }
+
+
 }

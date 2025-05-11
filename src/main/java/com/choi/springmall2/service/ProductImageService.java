@@ -8,7 +8,9 @@ import com.choi.springmall2.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -50,5 +52,31 @@ public class ProductImageService {
 
         // 저장된 이미지를 리스트에 추가
         productImages.add(savedImage);
+    }
+
+    public FileVo getThumbnailImage(int productId) {
+        // ProductImage 를 조회한 뒤에 FileVo에 매핑한 뒤 반환.
+        List<ProductImage> productImages = productImageRepository
+                .findByProductIdAndTypeOrderBySeqAsc(productId, "thumbnail");
+        if (!productImages.isEmpty()) {
+            return new FileVo(productImages.get(0).getImageName(), productImages.get(0).getImageKey());
+        }
+        // 상품 썸네일 이미지는 없을 수 있으므로 예외를 발생시키지 않고 null 을 반환.
+        return null;
+    }
+
+    public List<FileVo> getContentImages(int productId) {
+        // ProductImage 를 조회한 뒤에 FileVo에 매핑한 뒤 반환.
+        List<ProductImage> productImages = productImageRepository
+                .findByProductIdAndTypeOrderBySeqAsc(productId, "content");
+        if (!productImages.isEmpty()) {
+            List<FileVo> fileVoList = new ArrayList<>();
+            for (ProductImage productImage : productImages) {
+                fileVoList.add(new FileVo(productImage.getImageName(), productImage.getImageKey()));
+            }
+            return fileVoList;
+        }
+        // 상품 내용 이미지는 없을 수 있으므로 예외를 발생시키지 않고 null 을 반환.
+        return Collections.emptyList();
     }
 }
