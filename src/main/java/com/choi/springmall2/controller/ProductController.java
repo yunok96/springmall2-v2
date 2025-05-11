@@ -100,7 +100,7 @@ public class ProductController {
         Page<ProductDto> productPage = productService.getProductsPage(page, size);
 
         // 모델에 데이터 추가
-        model.addAttribute("productList", productPage);
+        model.addAttribute("productPage", productPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", productPage.getTotalPages());
 

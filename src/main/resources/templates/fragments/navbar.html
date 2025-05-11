@@ -11,28 +11,28 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="profile">프로필 테스트</a>
+                    <a class="nav-link" href="/profile">프로필 테스트</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="product/list">상품 목록 조회</a>
+                    <a class="nav-link" href="/product/list">상품 목록 조회</a>
                 </li>
 
                 <li class="nav-item">
                     <a class="nav-link" href="#">해당 사이트의 방문이 처음이신가요?</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAuthority('ROLE_SELLER')">
-                    <a class="nav-link" href="registerProduct">판매할 상품 등록</a>
+                    <a class="nav-link" href="/registerProduct">판매할 상품 등록</a>
                 </li>
 
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" href="login">로그인</a>
+                    <a class="nav-link" href="/login">로그인</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" href="signup">회원가입</a>
+                    <a class="nav-link" href="/signup">회원가입</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" href="logout">로그아웃</a>
+                    <a class="nav-link" href="/logout">로그아웃</a>
                 </li>
 
             </ul>

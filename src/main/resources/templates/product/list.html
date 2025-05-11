@@ -16,8 +16,8 @@
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 <div class="col" th:each="product : ${productPage.content}">
                     <div class="card h-100">
-                        <img th:src="@{'https://your-s3-url.com/' + ${product.thumbnailImage.imageKey}}"
-                             class="card-img-top" alt="상품 이미지">
+                        <img th:src="@{'https://kasterauk-springmall2-images.s3.ap-northeast-2.amazonaws.com/product_images/' + ${product.thumbnailImage.fileKey}}"
+                             class="card-img-top" th:alt="${product.thumbnailImage.fileName}">
                         <div class="card-body">
                             <h5 class="card-title" th:text="${product.title}">상품 이름</h5>
                             <p class="card-text" th:text="${product.description}">상품 설명입니다.</p>

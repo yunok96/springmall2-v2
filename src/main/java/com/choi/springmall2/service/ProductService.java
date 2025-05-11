@@ -72,20 +72,24 @@ public class ProductService {
         Page<Product> productPage = productRepository.findAll(pageable);
 
         // Dto 로 변환
-        List<ProductDto> productDtoList = productPage.getContent().stream()
-                .map(product -> {
-                    ProductDto productDto = new ProductDto();
-                    productDto.setId(product.getId());
-                    productDto.setTitle(product.getTitle());
-                    productDto.setDescription(product.getDescription());
-                    productDto.setPrice(product.getPrice());
-                    productDto.setStock(product.getStock());
-                    productDto.setThumbnailImage(productImageService.getThumbnailImage(product.getId()));
-                    // 상품 목록은 내용 이미지 필요없음.
-//                    productDto.setContentImages(productImageService.getContentImages(product.getId()));
-                    return productDto;
-                }
-                ).toList();
+
+        List<Product> productList = productPage.getContent();
+        List<ProductDto> productDtoList = new ArrayList<>();
+        for (Product product : productList) {
+            FileVo thumbnailImage = productImageService.getThumbnailImage(product.getId());
+            List<FileVo> contentImages = productImageService.getContentImages(product.getId());
+
+            ProductDto productDto = new ProductDto();
+            productDto.setId(product.getId());
+            productDto.setTitle(product.getTitle());
+            productDto.setDescription(product.getDescription());
+            productDto.setPrice(product.getPrice());
+            productDto.setStock(product.getStock());
+            productDto.setThumbnailImage(thumbnailImage);
+            productDto.setContentImages(contentImages);
+
+            productDtoList.add(productDto);
+        }
 
         // Page 형태로 변환하여 반환
         return new PageImpl<>(productDtoList, pageable, productPage.getTotalElements());
