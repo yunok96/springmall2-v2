@@ -113,7 +113,7 @@ class ProductServiceTest {
     @DisplayName("상품 목록 페이지 조회")
     void getProductsPage() {
         // given
-        int page = 0;
+        int page = 1;
         int size = 2;
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
