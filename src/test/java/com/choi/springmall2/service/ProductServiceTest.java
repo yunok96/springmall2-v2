@@ -115,7 +115,7 @@ class ProductServiceTest {
         // given
         int page = 1;
         int size = 2;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
 
         Product product1 = new Product();
         product1.setId(1);
