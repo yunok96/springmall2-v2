@@ -15,12 +15,19 @@
         <div class="container mt-4">
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 <div class="col" th:each="product : ${productPage.content}">
-                    <div class="card h-100">
-                        <img th:src="@{'https://kasterauk-springmall2-images.s3.ap-northeast-2.amazonaws.com/product_images/' + ${product.thumbnailImage.fileKey}}"
-                             class="card-img-top" th:alt="${product.thumbnailImage.fileName}">
+                    <div class="card h-100 position-relative">
+                        <img th:if="${product.thumbnailImage != null}"
+                             th:src="@{'https://kasterauk-springmall2-images.s3.ap-northeast-2.amazonaws.com/product_images/' + ${product.thumbnailImage.fileKey}}"
+                             class="card-img-top"
+                             th:alt="${product.thumbnailImage.fileName}">
+                        <img th:unless="${product.thumbnailImage != null}"
+                             src="/images/icons8-no-image-100.png"
+                             class="card-img-top"
+                             alt="기본 이미지">
                         <div class="card-body">
                             <h5 class="card-title" th:text="${product.title}">상품 이름</h5>
                             <p class="card-text" th:text="${product.description}">상품 설명입니다.</p>
+                            <a th:href="@{'/product/' + ${product.id}}" class="stretched-link"></a>
                         </div>
                         <div class="card-footer">
                             <small class="text-muted" th:text="'₩ ' + ${product.price}">₩ 0</small>
@@ -33,19 +40,19 @@
             <div class="d-flex justify-content-center mt-4">
                 <ul class="pagination">
                     <!-- 이전 페이지 버튼 -->
-                    <li class="page-item" th:classappend="${productPage.hasPrevious()} ? '': 'disabled'">
-                        <a class="page-link" th:href="@{'/products?page=0&size=10'}">이전</a>
+                    <li class="page-item" th:classappend="${productPage.hasPrevious()} ? '' : 'disabled'">
+                        <a class="page-link" th:href="@{'/product/list?page=' + ${productPage.number} + '&size=9'}">이전</a>
                     </li>
 
                     <!-- 페이지 번호들 -->
                     <li class="page-item" th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
                         th:classappend="${i == productPage.number} ? ' active' : ''">
-                        <a class="page-link" th:href="@{'/products?page=' + ${i} + '&size=10'}" th:text="${i + 1}">1</a>
+                        <a class="page-link" th:href="@{'/product/list?page=' + ${i + 1} + '&size=9'}" th:text="${i + 1}">1</a>
                     </li>
 
                     <!-- 다음 페이지 버튼 -->
                     <li class="page-item" th:classappend="${productPage.hasNext()} ? '': 'disabled'">
-                        <a class="page-link" th:href="@{'/products?page=' + ${productPage.number + 1} + '&size=10'}">다음</a>
+                        <a class="page-link" th:href="@{'/product/list?page=' + ${productPage.number + 2} + '&size=9'}">다음</a>
                     </li>
                 </ul>
             </div>

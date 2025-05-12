@@ -85,7 +85,6 @@ public class CustomExceptionHandler {
         model.addAttribute("status", HttpStatus.NOT_FOUND.value());
         model.addAttribute("path", request.getRequestURI());
         model.addAttribute("error", ex.getMessage());
-        model.addAttribute("message", "상품을 찾을 수 없습니다.");
         model.addAttribute("detail", ex.getMessage());
         response.setStatus(HttpStatus.NOT_FOUND.value());
 

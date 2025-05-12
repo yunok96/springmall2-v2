@@ -107,5 +107,12 @@ public class ProductController {
         return "product/list"; // Thymeleaf 템플릿 (product/list.html)로 반환
     }
 
-
+    // 상품 상세 조회
+    @GetMapping("/product/{id}")
+    public String getProductDetail(@PathVariable int id, Model model) {
+        // 상품 목록 조회
+        ProductDto productDto = productService.getProductDetail(id);
+        model.addAttribute("product", productDto);
+        return "product/detail";
+    }
 }
