@@ -28,7 +28,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // JWT 인증 불필요한 URL
-                        .requestMatchers("/", "/product/**", "/signup", "/login", "/logout", "/api/login", "/api/register", "/api/check-email", "/api/refresh-token")
+                        .requestMatchers("/", "/product/**", "/signup", "/login", "/logout"
+                                , "/api/login", "/api/register", "/api/check-email", "/api/refresh-token"
+                                , "/error", "/error/custom", "/error/error"
+                        )
                         .permitAll()
                         // 정적 리소스 경로 허용
                         .requestMatchers("/js/**", "/css/**", "/images/**") // 정적 리소스 경로
