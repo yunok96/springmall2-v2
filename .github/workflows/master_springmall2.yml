@@ -3,7 +3,7 @@ name: Build and deploy JAR app to Azure Web App - springmall2
 on:
   push:
     branches:
-      - master
+      - '*' # 모든 브랜치에서 트리거 (빌드 및 테스트)
   workflow_dispatch:
 
 jobs:
@@ -51,13 +51,14 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
-  
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' # 배포는 master나 main 브랜치에서만 실행
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: java-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
