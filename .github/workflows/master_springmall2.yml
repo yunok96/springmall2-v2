@@ -24,11 +24,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      # ✅ 이 단계에서 테스트 + 커버리지 생성
+      - name: Run tests and generate JaCoCo report
+        run: ./gradlew clean build jacocoTestReport
 
-      - name: List contents of build/libs
-        run: ls -l build/libs  # 디렉토리 내용 출력
+      # ✅ JaCoCo 리포트 경로 확인
+      - name: Debug JaCoCo report path
+        run: ls -R build/reports
+
+      # ✅ Codecov 에 결과 업로드
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4

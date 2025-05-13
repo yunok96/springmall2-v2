@@ -53,6 +53,13 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
+jacocoTestReport {
+    reports {
+        xml.required = true  // 💡 Codecov가 읽는 파일 형식
+        html.required = true // (선택) 로컬에서 보고 싶으면 true
+    }
+}
+
 tasks.named('jacocoTestReport') {
     dependsOn tasks.named('test')
     reports {
