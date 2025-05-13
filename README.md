@@ -1,6 +1,8 @@
 # Springmall2
 
 [![codecov](https://codecov.io/gh/yunok96/springmall2-v2/branch/master/graph/badge.svg)](https://codecov.io/gh/yunok96/springmall2-v2)
+![Java](https://img.shields.io/badge/Java-17-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-brightgreen)
 
 https://springmall2-ghgvedckerfaaae3.koreacentral-01.azurewebsites.net
 
