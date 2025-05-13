@@ -28,14 +28,12 @@ jobs:
       - name: Run tests and generate JaCoCo report
         run: ./gradlew clean build jacocoTestReport
 
-      # ✅ JaCoCo 리포트 경로 확인
-      - name: Debug JaCoCo report path
-        run: ls -R build/reports
-
       # ✅ Codecov 에 결과 업로드
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: yunok96/springmall2-v2
           files: build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Upload artifact for deployment job
