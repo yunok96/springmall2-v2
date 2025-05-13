@@ -1,5 +1,7 @@
 # Springmall2
 
+[![codecov](https://codecov.io/gh/yunok96/springmall2-v2/branch/master/graph/badge.svg)](https://codecov.io/gh/yunok96/springmall2-v2)
+
 https://springmall2-ghgvedckerfaaae3.koreacentral-01.azurewebsites.net
 
 **간단한 쇼핑몰 프로젝트**
