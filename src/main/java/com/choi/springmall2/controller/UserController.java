@@ -4,6 +4,7 @@ import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
+import com.choi.springmall2.domain.dto.UserProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
 import com.choi.springmall2.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -122,20 +123,36 @@ public class UserController {
         return "redirect:" + referer;
     }
 
-    // TODO : 로그인 확인용 테스트 코드. 삭제 혹은 수정해서 사용할 예정.
     @GetMapping("/profile")
     public String profilePage(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            CustomUser customUser = (CustomUser) authentication.getPrincipal();
+            int customUserId = customUser.getId();
 
-            CustomUser user = (CustomUser) authentication.getPrincipal();
-            model.addAttribute("user", authentication.getPrincipal());
-
-            model.addAttribute("email", user.getUsername()); // 유저의 이메일을 모델에 추가
-            model.addAttribute("id", user.getId()); // 유저의 이메일을 모델에 추가
+            // 사용자 정보 조회
+            UserProfileDto userProfileDto = userService.getUserProfileDto(customUserId);
+            model.addAttribute("userProfile", userProfileDto);
 
             return "user/profile"; // 인증된 사용자일 경우 프로필 페이지로 이동
+        } else {
+            return "redirect:/login"; // 인증되지 않은 사용자일 경우 로그인 페이지로 리다이렉트
+        }
+    }
+
+    @PostMapping("/editProfile")
+    public String editProfile(UserProfileDto userProfileDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            CustomUser customUser = (CustomUser) authentication.getPrincipal();
+            int customUserId = customUser.getId();
+
+            // 사용자 정보 수정
+            userService.updateUserProfile(userProfileDto, customUserId);
+
+            return "/";
         } else {
             return "redirect:/login"; // 인증되지 않은 사용자일 경우 로그인 페이지로 리다이렉트
         }

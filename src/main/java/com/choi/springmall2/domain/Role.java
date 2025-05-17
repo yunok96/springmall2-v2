@@ -8,7 +8,9 @@ import java.util.List;
 
 public enum Role {
     ROLE_BUYER,
-    ROLE_SELLER;
+    ROLE_SELLER,
+    ROLE_ADMIN
+    ;
 
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(this.name()));

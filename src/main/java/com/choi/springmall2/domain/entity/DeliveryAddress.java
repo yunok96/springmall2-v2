@@ -16,6 +16,7 @@ public class DeliveryAddress extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    private String recipientName;
     private String zipCode;
     private String addressLine1;
     private String addressLine2;
