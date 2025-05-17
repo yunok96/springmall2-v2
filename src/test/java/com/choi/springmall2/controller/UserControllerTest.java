@@ -4,6 +4,7 @@ import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
+import com.choi.springmall2.domain.dto.UserProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
 import com.choi.springmall2.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -193,14 +195,18 @@ class UserControllerTest {
         auth.setAuthenticated(true); // 인증된 사용자로 설정
         SecurityContextHolder.getContext().setAuthentication(auth);
 
+        UserProfileDto dummyDto = new UserProfileDto();
+        dummyDto.setEmail("test@example.com");
+        given(userService.getUserProfileDto(1)).willReturn(dummyDto);
+
         // when
         ResultActions result = mockMvc.perform(get(url));
 
         // then
         result.andExpect(status().isOk())
                 .andExpect(view().name("user/profile"))
-                .andExpect(model().attribute("email", "test@example.com"))
-                .andExpect(model().attribute("id", 1));
+                .andExpect(model().attributeExists("userProfile"))
+        ;
     }
 
     @Test
