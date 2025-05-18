@@ -287,7 +287,7 @@ document.getElementById('registerProductForm').addEventListener('submit', async 
 
     if (response.ok) {
         alert('상품을 등록했습니다.');
-        window.location.href = '/'; // TODO : 성공 시 목록 페이지로 이동
+        window.location.href = '/'; // TODO : 상품 등록 성공 시 목록 페이지로 이동. 기본 url 정해지면 변경.
     } else {
         const result = await response.text();
         console.error('상품 등록 오류:', result);

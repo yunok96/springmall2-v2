@@ -10,10 +10,12 @@ import java.util.List;
 public class CustomUser extends User {
     private int id;
     private String nickname;
+    private String email;
 
     public CustomUser(int id, String email, String nickname, String password, List<GrantedAuthority> authorities) {
         super(email, password, authorities);
         this.id = id;
         this.nickname = nickname;
+        this.email = email;
     }
 }

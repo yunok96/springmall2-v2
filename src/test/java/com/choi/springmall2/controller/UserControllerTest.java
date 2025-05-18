@@ -6,6 +6,7 @@ import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
 import com.choi.springmall2.domain.dto.UserProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
+import com.choi.springmall2.service.PasswordResetService;
 import com.choi.springmall2.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -43,6 +44,9 @@ class UserControllerTest {
 
     @MockitoBean
     UserService userService;
+
+    @MockitoBean
+    PasswordResetService passwordResetService;
 
     @Test
     @DisplayName("회원가입 페이지로 이동")
