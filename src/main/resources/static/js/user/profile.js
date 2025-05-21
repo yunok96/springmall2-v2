@@ -1,0 +1,28 @@
+document.addEventListener("DOMContentLoaded", function () {
+
+    // "비밀번호 초기화" 버튼 클릭 이벤트
+    const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+    if (resetPasswordBtn) {
+        resetPasswordBtn.addEventListener("click", function () {
+            if (confirm("비밀번호를 초기화하시겠습니까? 초기화된 비밀번호가 이메일로 전송됩니다.")) {
+                fetch("/request-password-reset", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }).then(res => {
+                    if (res.ok) {
+                        alert("비밀번호가 초기화되었습니다. 이메일을 확인하세요.");
+                    } else {
+                        alert("비밀번호 초기화에 실패했습니다.");
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    alert("오류가 발생했습니다.");
+                });
+            }
+        });
+    }
+
+});

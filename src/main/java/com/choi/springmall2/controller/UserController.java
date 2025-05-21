@@ -136,7 +136,12 @@ public class UserController {
         return "user/profile";
     }
 
-    // 프로필 수정
+    /**
+     * 프로필 수정
+     * @param customUser 인증된 사용자 정보
+     * @param userProfileDto 수정할 사용자 정보
+     * @return redirect:/profile
+     */
     @PostMapping("/editProfile")
     public String editProfile(@AuthenticationPrincipal CustomUser customUser, UserProfileDto userProfileDto) {
         if (customUser == null) {
@@ -148,11 +153,16 @@ public class UserController {
         // 사용자 정보 수정
         userService.updateUserProfile(userProfileDto, customUserId);
 
-        return "/";
+        return "redirect:/profile";
     }
 
-    // 비밀번호 초기화 요청
+    /**
+     * 비밀번호 초기화 요청 전송
+     * @param customUser 인증된 사용자 정보
+     * @return redirect:/login
+     */
     @PostMapping("/request-password-reset")
+    @ResponseBody
     public String requestPasswordReset(@AuthenticationPrincipal CustomUser customUser) {
         if (customUser == null) {
             return "redirect:/login";
@@ -162,10 +172,16 @@ public class UserController {
 
         // 비밀번호 초기화
         passwordResetService.resetPassword(customUser.getEmail());
-        return "/";
+        return null;
     }
 
-    // 링크를 통해 비밀번호 재설정 요청 페이지로 이동
+
+    /**
+     * 링크를 통해 비밀번호 재설정 요청 페이지로 이동
+     * @param token 비밀번호 재설정 토큰
+     * @param model message | token
+     * @return user/reset-password-form
+     */
     @GetMapping("/reset-password")
     public String resetPassword(@RequestParam("token") String token, Model model) {
         boolean valid = passwordResetService.isValidToken(token);

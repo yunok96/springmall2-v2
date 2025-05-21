@@ -228,4 +228,54 @@ class UserControllerTest {
         result.andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login"));
     }
+
+    @Test
+    @DisplayName("익명 사용자가 프로필 수정 요청 시, /login 으로 리다이렉트")
+    void editProfile_anonymous() throws Exception {
+        // given
+        String url = "/editProfile";
+
+        // when
+        ResultActions result = mockMvc.perform(
+                post(url).param("nickname", "newNickname")
+        );
+
+        // then
+        result.andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com", roles = "BUYER")
+    @DisplayName("로그인된 사용자가 프로필 수정 요청 시, 프로필 수정 후 /profile 으로 리다이렉트")
+    void editProfile_pass() throws Exception {
+        // given
+        String url = "/editProfile";
+
+        // CustomUser 객체 생성
+        CustomUser customUser = new CustomUser(1, "test@example.com", "tester", "encodedPassword", List.of());
+
+        // CustomUser를 인증 정보로 설정
+        TestingAuthenticationToken auth = new TestingAuthenticationToken(customUser, null);
+        auth.setAuthenticated(true); // 인증된 사용자로 설정
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        UserProfileDto dummyDto = new UserProfileDto();
+        dummyDto.setEmail("test@example.com");
+        given(userService.getUserProfileDto(1)).willReturn(dummyDto);
+
+        // when
+        ResultActions result = mockMvc.perform(
+                post(url).param("nickname", "newNickname")
+        );
+
+        // then
+        verify(userService).updateUserProfile(any(UserProfileDto.class), eq(1));
+        result.andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/profile"))
+        ;
+    }
+
+    // TODO : 비밀번호 초기화 요청 테스트 추가
 }
