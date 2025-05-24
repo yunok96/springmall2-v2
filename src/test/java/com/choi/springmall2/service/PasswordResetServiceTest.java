@@ -52,7 +52,7 @@ class PasswordResetServiceTest {
 
         // when & then
         assertThrows(UserNotFoundException.class, () -> {
-            passwordResetService.resetPassword(email);
+            passwordResetService.sendMailToRequestPasswordReset(email);
         });
         verify(passwordResetTokenRepository, never()).save(any());
         verify(applicationEventPublisher, never()).publishEvent(any());
@@ -71,7 +71,7 @@ class PasswordResetServiceTest {
         given(passwordResetTokenRepository.existsByToken(anyString())).willReturn(false); // 토큰 중복 없음
 
         // when
-        passwordResetService.resetPassword(email);
+        passwordResetService.sendMailToRequestPasswordReset(email);
 
         // then
         ArgumentCaptor<PasswordResetToken> tokenCaptor = ArgumentCaptor.forClass(PasswordResetToken.class);
@@ -80,7 +80,7 @@ class PasswordResetServiceTest {
         PasswordResetToken savedToken = tokenCaptor.getValue();
         assertEquals(user, savedToken.getUser());
         assertNotNull(savedToken.getToken());
-        assertTrue(savedToken.getExpirationTime().isAfter(LocalDateTime.now()));
+        assertTrue(savedToken.getExpiryDate().isAfter(LocalDateTime.now()));
 
         verify(applicationEventPublisher).publishEvent(any(PasswordResetMailEvent.class));
     }
@@ -135,7 +135,7 @@ class PasswordResetServiceTest {
         String token = "test-token";
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setExpirationTime(LocalDateTime.now().minusHours(1));
+        resetToken.setExpiryDate(LocalDateTime.now().minusHours(1));
 
         given(passwordResetTokenRepository.findByToken(token)).willReturn(Optional.of(resetToken));
 
@@ -153,7 +153,7 @@ class PasswordResetServiceTest {
         String token = "test-token";
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setExpirationTime(LocalDateTime.now().plusHours(1));
+        resetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
 
         given(passwordResetTokenRepository.findByToken(token)).willReturn(Optional.of(resetToken));
 
@@ -189,7 +189,7 @@ class PasswordResetServiceTest {
         String token = "test-token";
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setExpirationTime(LocalDateTime.now().minusHours(1));
+        resetToken.setExpiryDate(LocalDateTime.now().minusHours(1));
         String password = "new-password";
 
         given(passwordResetTokenRepository.findByToken(token)).willReturn(Optional.of(resetToken));
@@ -212,7 +212,7 @@ class PasswordResetServiceTest {
         String token = "test-token";
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setExpirationTime(LocalDateTime.now().plusHours(1));
+        resetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
         resetToken.setUser(user);
 
         String password = "new-password";

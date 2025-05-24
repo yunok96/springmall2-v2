@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -277,5 +278,74 @@ class UserControllerTest {
         ;
     }
 
-    // TODO : 비밀번호 초기화 요청 테스트 추가
+    @Test
+    @DisplayName("비밀번호 초기화 요청 - 유효하지 않은 토큰 입력시")
+    void handlePasswordReset_invalidToken() throws Exception {
+        // given
+        String url = "/reset-password-post";
+        String token = "test-token";
+        String newPassword = "new-password";
+
+        given(passwordResetService.isValidToken(token)).willReturn(false);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .param("token", token)
+                .param("newPassword", newPassword)
+        );
+
+        // then
+        result.andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("유효하지 않은 토큰입니다."))
+        ;
+    }
+
+    @Test
+    @DisplayName("비밀번호 초기화 요청 - 비밀번호 수정 처리 중 예외 발생")
+    void handlePasswordReset_exceptionDuringUpdatePassword() throws Exception {
+        // given
+        String url = "/reset-password-post";
+        String token = "test-token";
+        String newPassword = "new-password";
+
+        given(passwordResetService.isValidToken(token)).willReturn(true);
+
+        doThrow(new RuntimeException("비밀번호 수정 중 오류 발생"))
+                .when(passwordResetService).updatePasswordWithToken(token, newPassword);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .param("token", token)
+                .param("newPassword", newPassword)
+        );
+
+        // then
+        result.andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("비밀번호 초기화 중 에러가 발생했습니다."))
+        ;
+    }
+
+    @Test
+    @DisplayName("비밀번호 초기화 요청 - 정상적으로 완료")
+    void handlePasswordReset_pass() throws Exception {
+        // given
+        String url = "/reset-password-post";
+        String token = "test-token";
+        String newPassword = "new-password";
+
+        given(passwordResetService.isValidToken(token)).willReturn(true);
+
+        willDoNothing().given(passwordResetService).updatePasswordWithToken(token, newPassword);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .param("token", token)
+                .param("newPassword", newPassword)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("비밀번호가 성공적으로 변경되었습니다."))
+        ;
+    }
 }

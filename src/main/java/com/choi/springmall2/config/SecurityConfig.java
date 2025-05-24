@@ -28,7 +28,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // JWT 인증 불필요한 URL
-                        .requestMatchers("/", "/product/**", "/signup", "/login", "/logout"
+                        .requestMatchers("/", "/product/**", "/signup", "/login", "/logout", "/reset-password", "/reset-password-post"
                                 , "/api/login", "/api/register", "/api/check-email", "/api/refresh-token"
                                 , "/error", "/error/custom", "/error/error"
                         )

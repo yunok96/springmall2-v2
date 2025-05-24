@@ -94,6 +94,7 @@ public class UserController {
     // 로그아웃 처리 api
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) {
+        // 쿠키에서 액세스 토큰과 리프레시 토큰을 삭제함으로 로그아웃 처리
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if (JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
@@ -163,16 +164,14 @@ public class UserController {
      */
     @PostMapping("/request-password-reset")
     @ResponseBody
-    public String requestPasswordReset(@AuthenticationPrincipal CustomUser customUser) {
+    public ResponseEntity<?> requestPasswordReset(@AuthenticationPrincipal CustomUser customUser) {
         if (customUser == null) {
-            return "redirect:/login";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    Map.of("message", "인증되지 않은 사용자입니다.")
+            );
         }
-
-        // TODO : 프로필 화면에 비밀번호 초기화 버튼 만든 후, 버튼을 누르면 정상적으로 동작하는지 확인.
-
-        // 비밀번호 초기화
-        passwordResetService.resetPassword(customUser.getEmail());
-        return null;
+        passwordResetService.sendMailToRequestPasswordReset(customUser.getEmail());
+        return ResponseEntity.ok(Map.of("message", "비밀번호 재설정 링크가 이메일로 전송되었습니다."));
     }
 
 
@@ -183,13 +182,63 @@ public class UserController {
      * @return user/reset-password-form
      */
     @GetMapping("/reset-password")
-    public String resetPassword(@RequestParam("token") String token, Model model) {
+    public String resetPassword(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("token") String token, Model model) {
         boolean valid = passwordResetService.isValidToken(token);
         if (!valid) {
             model.addAttribute("message", "유효하지 않거나 만료된 토큰입니다.");
             return "error";
         }
+
+        // 비밀번호 수정 url 로 이동할 경우, 로그아웃 처리
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                    Cookie accessTokenCookie = new Cookie(JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME, null);
+                    accessTokenCookie.setHttpOnly(true);
+                    accessTokenCookie.setPath("/"); // 도메인에 맞는 path 설정
+                    accessTokenCookie.setMaxAge(0); // 쿠키 만료 처리
+                    response.addCookie(accessTokenCookie); // 쿠키 삭제
+                } else if (JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                    Cookie refreshTokenCookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, null);
+                    refreshTokenCookie.setHttpOnly(true);
+                    refreshTokenCookie.setPath("/"); // 도메인에 맞는 path 설정
+                    refreshTokenCookie.setMaxAge(0); // 쿠키 만료 처리
+                    response.addCookie(refreshTokenCookie); // 쿠키 삭제
+                }
+            }
+        }
+
         model.addAttribute("token", token);
         return "user/reset-password-form";
+    }
+
+    /**
+     * 링크를 통해 비밀번호 재설정 요청 페이지로 이동
+     * @param token 비밀번호 재설정 토큰
+     * @param model message | token
+     * @return ResponseEntity
+     */
+    @PostMapping("/reset-password-post")
+    @ResponseBody
+    public ResponseEntity<?> handlePasswordReset(@RequestParam("token") String token
+                                    , @RequestParam("newPassword") String newPassword) {
+        boolean valid = passwordResetService.isValidToken(token);
+        if (!valid) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    Map.of("message", "유효하지 않은 토큰입니다.")
+            );
+        }
+
+        try {
+            passwordResetService.updatePasswordWithToken(token, newPassword);
+            return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("message", "비밀번호 초기화 중 에러가 발생했습니다.")
+            );
+        }
     }
 }

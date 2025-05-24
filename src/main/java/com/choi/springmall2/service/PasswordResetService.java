@@ -34,7 +34,7 @@ public class PasswordResetService {
      * @throws UserNotFoundException 사용자 이메일로 사용자를 찾을 수 없을 경우
      */
     @Transactional
-    public void resetPassword(String email) {
+    public void sendMailToRequestPasswordReset(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
@@ -44,7 +44,7 @@ public class PasswordResetService {
         PasswordResetToken passwordResetToken = new PasswordResetToken();
         passwordResetToken.setUser(user);
         passwordResetToken.setToken(token);
-        passwordResetToken.setExpirationTime(LocalDateTime.now().plusHours(1));
+        passwordResetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
 
         passwordResetTokenRepository.save(passwordResetToken);
 
@@ -76,7 +76,7 @@ public class PasswordResetService {
         }
 
         PasswordResetToken resetToken = tokenOpt.get();
-        return resetToken.getExpirationTime().isAfter(LocalDateTime.now());
+        return resetToken.getExpiryDate().isAfter(LocalDateTime.now());
     }
 
     /**
@@ -91,7 +91,7 @@ public class PasswordResetService {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(() -> new InvalidPasswordResetTokenException("유효하지 않은 토큰입니다."));
 
-        if (resetToken.getExpirationTime().isBefore(LocalDateTime.now())) {
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new ExpiredPasswordResetTokenException("토큰이 만료되었습니다.");
         }
 

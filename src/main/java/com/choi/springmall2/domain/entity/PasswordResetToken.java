@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
 public class PasswordResetToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @OneToOne
     private User user;
 
     private String token;
-    private LocalDateTime expirationTime;
+    private LocalDateTime expiryDate;
 }

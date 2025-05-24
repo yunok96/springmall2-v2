@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const resetPasswordBtn = document.getElementById("resetPasswordBtn");
     if (resetPasswordBtn) {
         resetPasswordBtn.addEventListener("click", function () {
-            if (confirm("비밀번호를 초기화하시겠습니까? 초기화된 비밀번호가 이메일로 전송됩니다.")) {
+            if (confirm("비밀번호를 초기화하시겠습니까?\n초기화된 비밀번호가 이메일로 전송됩니다.")) {
                 fetch("/request-password-reset", {
                     method: "POST",
                     headers: {
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }).catch(err => {
                     console.error(err);
-                    alert("오류가 발생했습니다.");
+                    alert("비밀번호 재설정 메일 발송 중 오류가 발생했습니다.");
                 });
             }
         });
