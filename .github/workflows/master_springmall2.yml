@@ -75,5 +75,5 @@ jobs:
         with:
           app-name: 'springmall2'
           slot-name: 'Production'
-          package: 'springmall2.jar'
+          package: 'build/libs/springmall2.jar'
           startup-command: 'java -jar -Dspring.profiles.active=prod springmall2.jar'
