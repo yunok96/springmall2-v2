@@ -84,5 +84,5 @@ jobs:
         with:
           app-name: 'springmall2'
           slot-name: 'Production'
-          package: 'springmall2.jar'
-          startup-command: 'java -jar -Dspring.profiles.active=prod springmall2.jar'
+          package: '.'  # 현재 폴더 전체를 배포
+          startup-command: 'java -jar springmall2.jar -Dspring.profiles.active=prod'  # 혹은 -D 옵션 순서 바꿔보기
