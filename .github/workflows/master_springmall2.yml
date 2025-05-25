@@ -65,6 +65,12 @@ jobs:
       - name: List files after artifact download
         run: ls -alR
 
+      - name: Print current working directory
+        run: pwd
+
+      - name: List everything
+        run: find . -type f
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
