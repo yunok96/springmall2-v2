@@ -28,6 +28,9 @@ jobs:
       - name: Run tests and generate JaCoCo report
         run: ./gradlew clean build jacocoTestReport
 
+      - name: List contents of build/libs
+        run: ls -alR build/libs  # 빌드 디렉토리 내용 출력
+
       # ✅ Codecov 에 결과 업로드
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -40,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/build/libs/springmall2.jar'
+          path: '${{ github.workspace }}/build/libs/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,7 +61,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
-          path: ./app
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -73,5 +75,5 @@ jobs:
         with:
           app-name: 'springmall2'
           slot-name: 'Production'
-          package: './app/springmall2.jar'
-          startup-command: 'java -jar -Dspring.profiles.active=prod /home/site/wwwroot/springmall2.jar'
+          package: '*.jar'
+          startup-command: 'java -jar -Dspring.profiles.active=prod *.jar'
