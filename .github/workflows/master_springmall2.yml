@@ -62,6 +62,9 @@ jobs:
         with:
           name: java-app
 
+      - name: List files after artifact download
+        run: ls -al
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
