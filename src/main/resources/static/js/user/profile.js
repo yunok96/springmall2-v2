@@ -26,3 +26,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+
+function openPostcode() {
+    document.getElementById('postcodeModal').style.display = 'block';
+
+    new daum.Postcode({
+        oncomplete: function(data) {
+            // 선택된 주소 데이터를 폼에 채우기
+            document.getElementById('zipCode').value = data.zonecode;
+            document.getElementById('addressLine1').value = data.roadAddress || data.jibunAddress;
+
+            // 모달 닫기
+            document.getElementById('postcodeModal').style.display = 'none';
+        },
+        onclose: function(state) {
+            document.getElementById('postcodeModal').style.display = 'none';
+        }
+    }).embed(document.getElementById('postcodeLayer'));
+}
+
+function closePostcodeModal() {
+    document.getElementById('postcodeModal').style.display = 'none';
+    document.getElementById('postcodeLayer').innerHTML = ''; // 주소창 초기화
+}
