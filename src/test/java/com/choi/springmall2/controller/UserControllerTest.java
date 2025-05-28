@@ -6,6 +6,7 @@ import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
 import com.choi.springmall2.domain.dto.UserProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
+import com.choi.springmall2.error.exceptions.DuplicateUserException;
 import com.choi.springmall2.service.PasswordResetService;
 import com.choi.springmall2.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.*;
@@ -63,10 +65,10 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("이메일 중복 확인")
-    void checkEmail() throws Exception {
+    @DisplayName("이메일 중복 확인 - 중복 이메일 존재")
+    void checkEmailDuplication_duplicated() throws Exception {
         // given
-        String url = "/api/check-email";
+        String url = "/api/check-email-duplication";
 
         String emailJson = """
             {
@@ -74,7 +76,79 @@ class UserControllerTest {
             }
             """;
 
-        doNothing().when(userService).isEmailExists("test@example.com"); // 호출 시 예외가 발생하지 않도록 설정
+        given(userService.isEmailExists("test@example.com")).willReturn(true);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emailJson));
+
+        // then
+        result.andExpect(status().isConflict())
+                .andExpect(content().string(containsString("이미 존재하는 이메일입니다.")));
+    }
+
+    @Test
+    @DisplayName("이메일 중복 확인 - 이메일이 존재하지 않을 때")
+    void checkEmailDuplication_pass() throws Exception {
+        // given
+        String url = "/api/check-email-duplication";
+
+        String emailJson = """
+            {
+              "email": "test@example.com"
+            }
+            """;
+
+        given(userService.isEmailExists("test@example.com")).willReturn(false);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emailJson));
+
+        // then
+        result.andExpect(status().isOk());
+        verify(userService, times(1)).isEmailExists("test@example.com");
+    }
+
+    @Test
+    @DisplayName("이메일 존재 여부 확인 - 존재하지 않음")
+    void checkEmailExists_notExists() throws Exception {
+        // given
+        String url = "/api/check-email-exists";
+
+        String emailJson = """
+            {
+              "email": "test@example.com"
+            }
+            """;
+
+        given(userService.isEmailExists("test@example.com")).willReturn(false);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emailJson));
+
+        // then
+        result.andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("가입된 이메일이 존재하지 않습니다.")));
+    }
+
+    @Test
+    @DisplayName("이메일 존재 여부 확인 - 존재함")
+    void checkEmailExists_pass() throws Exception {
+        // given
+        String url = "/api/check-email-exists";
+
+        String emailJson = """
+            {
+              "email": "test@example.com"
+            }
+            """;
+
+        given(userService.isEmailExists("test@example.com")).willReturn(true);
 
         // when
         ResultActions result = mockMvc.perform(post(url)
@@ -152,8 +226,8 @@ class UserControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(header().stringValues("Set-Cookie",
                         Matchers.hasItems(
-                                Matchers.containsString("access_token=" + accessToken),  // 쿠키 이름 변경
-                                Matchers.containsString("refresh_token=" + refreshToken) // 쿠키 이름 변경
+                                containsString("access_token=" + accessToken),  // 쿠키 이름 변경
+                                containsString("refresh_token=" + refreshToken) // 쿠키 이름 변경
                         )
                 ));
 
@@ -179,9 +253,9 @@ class UserControllerTest {
         result.andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(referer))
                 .andExpect(header().stringValues("Set-Cookie", Matchers.hasItems(
-                        Matchers.containsString(JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME + "=;"),
-                        Matchers.containsString(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME + "="),
-                        Matchers.containsString("Max-Age=0")
+                        containsString(JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME + "=;"),
+                        containsString(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME + "="),
+                        containsString("Max-Age=0")
                 )));
     }
 
@@ -348,4 +422,61 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("비밀번호가 성공적으로 변경되었습니다."))
         ;
     }
+
+    @Test
+    @DisplayName("비로그인 - 비밀번호 찾기 페이지로 이동")
+    void forgotPassword() throws Exception {
+        // given
+        String url = "/forgotPassword";
+
+        // when
+        ResultActions result = mockMvc.perform(get(url));
+
+        // then
+        result.andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("비로그인 - 이메일로 비밀번호 초기화 요청 전송 - 이메일 입력 안함")
+    void requestPasswordResetByEmail_emailNotInput() throws Exception {
+        // given
+        String url = "/request-password-reset-by-email";
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("이메일을 입력해주세요."))
+        ;
+    }
+
+    @Test
+    @DisplayName("비로그인 - 이메일로 비밀번호 초기화 요청 전송 - 전송 완료")
+    void requestPasswordResetByEmail_pass() throws Exception {
+        // given
+        String url = "/request-password-reset-by-email";
+        String emailJson = """
+            {
+              "email": "test@example.com"
+            }
+            """;
+
+        willDoNothing().given(passwordResetService).sendMailToRequestPasswordReset(emailJson);
+
+        // when
+        ResultActions result = mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emailJson)
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("비밀번호 재설정 링크가 이메일로 전송되었습니다."))
+        ;
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.choi.springmall2.repository;
 
 import com.choi.springmall2.domain.entity.PasswordResetToken;
+import com.choi.springmall2.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -10,6 +11,5 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
 
     boolean existsByToken(String token);
 
-
-//    Optional<PasswordResetToken> findByUserId(int userId);
+    void deleteByUser(User user);
 }

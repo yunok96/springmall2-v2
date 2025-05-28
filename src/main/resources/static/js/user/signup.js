@@ -19,7 +19,7 @@ function validatePassword() {
 
 // 중복 이메일 체크
 async function duplicateEmailCheck(email) {
-    const response = await fetch('/api/check-email', {
+    const response = await fetch('/api/check-email-duplication', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

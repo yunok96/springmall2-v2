@@ -85,14 +85,14 @@ class UserServiceTest {
         dto.setNickname("nickname");
         dto.setRole("ROLE_BUYER");
 
-        // given
         given(userRepository.existsByEmail("test@example.com"))
                 .willReturn(true); // 👉 미리 '중복 있음'이라고 가짜 세팅
 
-        // when & then
-        assertThrows(DuplicateUserException.class, () -> {
-            userService.isEmailExists("test@example.com");
-        });
+        // when
+        boolean result = userService.isEmailExists("test@example.com");
+
+        // then
+        assertThat(result).isTrue();
     }
 
     // 비밀번호 확인 틀릴 경우 예외 발생 테스트

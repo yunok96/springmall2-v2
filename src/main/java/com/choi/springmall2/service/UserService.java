@@ -37,12 +37,13 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
-    // 중복 사용자 조회
-    public void isEmailExists(String email) {
-        boolean exists = userRepository.existsByEmail(email);
-        if (exists) {
-            throw new DuplicateUserException("이미 존재하는 이메일입니다." + email);
-        }
+    /**
+     * 이메일 존재 여부 확인
+     * @param email 이메일
+     * @return boolean true: 존재, false: 존재하지 않음
+     */
+    public boolean isEmailExists(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     // 회원가입

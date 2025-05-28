@@ -6,6 +6,8 @@ import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
 import com.choi.springmall2.domain.dto.UserProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
+import com.choi.springmall2.error.exceptions.DuplicateUserException;
+import com.choi.springmall2.error.exceptions.UserNotFoundException;
 import com.choi.springmall2.service.PasswordResetService;
 import com.choi.springmall2.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -37,11 +39,36 @@ public class UserController {
         return "user/signup"; // signup.html로 이동
     }
 
-    // 중복 이메일 확인 api
-    @PostMapping("/api/check-email")
-    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> payload) {
+    /**
+     * 이메일 중복 체크
+     * @param payload 이메일 JSON
+     * @throws DuplicateUserException 중복된 이메일 예외
+     * @return ResponseEntity
+     */
+    @PostMapping("/api/check-email-duplication")
+    public ResponseEntity<?> checkEmailDuplication(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
-        userService.isEmailExists(email);
+
+        if ( userService.isEmailExists(email) ) {
+            throw new DuplicateUserException("이미 존재하는 이메일입니다." + email);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 이메일 존재 여부 확인
+     * @param payload 이메일 JSON
+     * @throws UserNotFoundException 이메일이 존재하지 않는 경우 예외
+     * @return ResponseEntity
+     */
+    @PostMapping("/api/check-email-exists")
+    public ResponseEntity<?> checkEmailExists(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+
+        if ( !userService.isEmailExists(email) ) {
+            throw new UserNotFoundException("가입된 이메일이 존재하지 않습니다." + email);
+        }
 
         return ResponseEntity.ok().build();
     }
@@ -241,4 +268,31 @@ public class UserController {
             );
         }
     }
+
+    /**
+     * 비로그인 - 비밀번호 찾기 페이지로 이동
+     * @return user/forgotPassword.html
+     */
+    @GetMapping("/forgotPassword")
+    public String forgotPassword() {
+        return "user/forgotPassword";
+    }
+
+    /**
+     * 비밀번호 초기화 요청 전송
+     * @param payload 이메일 JSON 데이터
+     * @return redirect:/login
+     */
+    @PostMapping("/request-password-reset-by-email")
+    @ResponseBody
+    public ResponseEntity<?> requestPasswordResetByEmail(@RequestBody Map<String, String> payload) {
+        if(payload == null || !payload.containsKey("email") || payload.get("email").isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "이메일을 입력해주세요."));
+        }
+        String email = payload.get("email");
+
+        passwordResetService.sendMailToRequestPasswordReset(email);
+        return ResponseEntity.ok(Map.of("message", "비밀번호 재설정 링크가 이메일로 전송되었습니다."));
+    }
+
 }

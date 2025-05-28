@@ -40,6 +40,9 @@ public class PasswordResetService {
 
         String token = generateUniqueToken();
 
+        // 해당 사용자의 비밀번호 초기화 토큰이 존재한다면 기존 토큰을 삭제
+        passwordResetTokenRepository.deleteByUser(user);
+
         // 메일 전송 성공 후 DB에 저장
         PasswordResetToken passwordResetToken = new PasswordResetToken();
         passwordResetToken.setUser(user);
