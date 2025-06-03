@@ -4,9 +4,8 @@ import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
-import com.choi.springmall2.domain.dto.UserProfileDto;
+import com.choi.springmall2.domain.dto.UserAddressProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
-import com.choi.springmall2.error.exceptions.DuplicateUserException;
 import com.choi.springmall2.service.PasswordResetService;
 import com.choi.springmall2.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -274,7 +273,7 @@ class UserControllerTest {
         auth.setAuthenticated(true); // 인증된 사용자로 설정
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        UserProfileDto dummyDto = new UserProfileDto();
+        UserAddressProfileDto dummyDto = new UserAddressProfileDto();
         dummyDto.setEmail("test@example.com");
         given(userService.getUserProfileDto(1)).willReturn(dummyDto);
 
@@ -336,7 +335,7 @@ class UserControllerTest {
         auth.setAuthenticated(true); // 인증된 사용자로 설정
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        UserProfileDto dummyDto = new UserProfileDto();
+        UserAddressProfileDto dummyDto = new UserAddressProfileDto();
         dummyDto.setEmail("test@example.com");
         given(userService.getUserProfileDto(1)).willReturn(dummyDto);
 
@@ -346,7 +345,7 @@ class UserControllerTest {
         );
 
         // then
-        verify(userService).updateUserProfile(any(UserProfileDto.class), eq(1));
+        verify(userService).updateUserProfile(any(UserAddressProfileDto.class), eq(1));
         result.andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/profile"))
         ;

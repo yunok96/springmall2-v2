@@ -3,26 +3,21 @@ package com.choi.springmall2.service;
 import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.Role;
 import com.choi.springmall2.domain.dto.TokenDto;
-import com.choi.springmall2.domain.dto.UserProfileDto;
+import com.choi.springmall2.domain.dto.UserAddressProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
 import com.choi.springmall2.domain.entity.DeliveryAddress;
 import com.choi.springmall2.domain.entity.User;
 import com.choi.springmall2.domain.vo.DeliveryAddressVo;
-import com.choi.springmall2.error.exceptions.DuplicateUserException;
 import com.choi.springmall2.error.exceptions.UserNotFoundException;
-import com.choi.springmall2.repository.DeliveryAddressRepository;
-import com.choi.springmall2.repository.PasswordResetTokenRepository;
 import com.choi.springmall2.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,11 +26,12 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final DeliveryAddressRepository deliveryAddressRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+
+    private final DeliveryAddressService deliveryAddressService;
 
     /**
      * 이메일 존재 여부 확인
@@ -89,67 +85,35 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
     }
 
-    // 사용자 설정 배송지 정보 조회
-    public List<DeliveryAddress> getUserDeliveryAddress(int userId) {
-        return deliveryAddressRepository.findByUserId(userId);
-    }
-
     /**
      * 사용자 프로필 Dto 반환
      * @param userId 사용자 id
      * @return userProfileDto 사용자 정보 + 배송지 목록 Dto
      */
-    public UserProfileDto getUserProfileDto(int userId) {
+    public UserAddressProfileDto getUserProfileDto(int userId) {
         User user = getUserById(userId);
-        List<DeliveryAddress> deliveryAddresses = getUserDeliveryAddress(userId);
+        List<DeliveryAddress> deliveryAddresses = deliveryAddressService.getUserDeliveryAddress(userId);
 
-        UserProfileDto userProfileDto = new UserProfileDto();
-        userProfileDto.setEmail(user.getEmail());
-        userProfileDto.setNickname(user.getNickname());
-        userProfileDto.setRole(user.getRole());
-        userProfileDto.setCreateAt(user.getCreateAt());
+        UserAddressProfileDto userAddressProfileDto = new UserAddressProfileDto();
+        userAddressProfileDto.setEmail(user.getEmail());
+        userAddressProfileDto.setNickname(user.getNickname());
+        userAddressProfileDto.setRole(user.getRole());
+        userAddressProfileDto.setCreateAt(user.getCreateAt());
 
-        List<DeliveryAddressVo> deliveryAddressVos = getDeliveryAddressVos(deliveryAddresses);
-        userProfileDto.setDeliveryAddresses(deliveryAddressVos);
+        List<DeliveryAddressVo> deliveryAddressVos = deliveryAddressService.getDeliveryAddressVos(deliveryAddresses);
+        userAddressProfileDto.setDeliveryAddresses(deliveryAddressVos);
 
-        return userProfileDto;
-    }
-
-
-    /**
-     * 배송지 정보 List<Vo> 매핑
-     * @param deliveryAddresses 배송지 엔티티 리스트
-     * @return deliveryAddressVos 배송지 vo 리스트
-     */
-    public List<DeliveryAddressVo> getDeliveryAddressVos(List<DeliveryAddress> deliveryAddresses) {
-        if (deliveryAddresses == null || deliveryAddresses.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<DeliveryAddressVo> deliveryAddressVos = new ArrayList<>();
-        for (DeliveryAddress deliveryAddress : deliveryAddresses) {
-            DeliveryAddressVo deliveryAddressVo = new DeliveryAddressVo(
-                    deliveryAddress.getRecipientName(),
-                    deliveryAddress.getZipCode(),
-                    deliveryAddress.getAddressLine1(),
-                    deliveryAddress.getAddressLine2(),
-                    deliveryAddress.getPhoneNumber(),
-                    deliveryAddress.isDefault(),
-                    deliveryAddress.getCreateAt()
-            );
-            deliveryAddressVos.add(deliveryAddressVo);
-        }
-        return deliveryAddressVos;
+        return userAddressProfileDto;
     }
 
     /**
      * 사용자 프로필 수정. 수정 가능한 항목은 nickName 밖에 없음
-     * @param userProfileDto 사용자 Dto
+     * @param userAddressProfileDto 사용자 Dto
      * @param userId 사용자 id
      */
-    public void updateUserProfile(UserProfileDto userProfileDto, int userId) {
+    public void updateUserProfile(UserAddressProfileDto userAddressProfileDto, int userId) {
         User user = getUserById(userId);
-        user.setNickname(userProfileDto.getNickname());
+        user.setNickname(userAddressProfileDto.getNickname());
         userRepository.save(user);
     }
 

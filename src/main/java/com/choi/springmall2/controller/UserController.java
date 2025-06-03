@@ -4,7 +4,7 @@ import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.LoginRequestDto;
 import com.choi.springmall2.domain.dto.TokenDto;
-import com.choi.springmall2.domain.dto.UserProfileDto;
+import com.choi.springmall2.domain.dto.UserAddressProfileDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
 import com.choi.springmall2.error.exceptions.DuplicateUserException;
 import com.choi.springmall2.error.exceptions.UserNotFoundException;
@@ -158,8 +158,8 @@ public class UserController {
         int customUserId = customUser.getId();
 
         // 사용자 정보 조회
-        UserProfileDto userProfileDto = userService.getUserProfileDto(customUserId);
-        model.addAttribute("userProfile", userProfileDto);
+        UserAddressProfileDto userAddressProfileDto = userService.getUserProfileDto(customUserId);
+        model.addAttribute("userProfile", userAddressProfileDto);
 
         return "user/profile";
     }
@@ -167,11 +167,11 @@ public class UserController {
     /**
      * 프로필 수정
      * @param customUser 인증된 사용자 정보
-     * @param userProfileDto 수정할 사용자 정보
+     * @param userAddressProfileDto 수정할 사용자 정보
      * @return redirect:/profile
      */
     @PostMapping("/editProfile")
-    public String editProfile(@AuthenticationPrincipal CustomUser customUser, UserProfileDto userProfileDto) {
+    public String editProfile(@AuthenticationPrincipal CustomUser customUser, UserAddressProfileDto userAddressProfileDto) {
         if (customUser == null) {
             return "redirect:/login";
         }
@@ -179,7 +179,7 @@ public class UserController {
         int customUserId = customUser.getId();
 
         // 사용자 정보 수정
-        userService.updateUserProfile(userProfileDto, customUserId);
+        userService.updateUserProfile(userAddressProfileDto, customUserId);
 
         return "redirect:/profile";
     }

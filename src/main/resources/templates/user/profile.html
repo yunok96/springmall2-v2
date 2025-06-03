@@ -64,66 +64,10 @@
 
         <hr />
 
-        <!-- 배송지 목록 -->
-        <h3>배송지 목록</h3>
+        <!-- 주소 목록 -->
+        <h3 class="mb-4">배송지</h3>
 
-        <!-- 주소 등록 폼 -->
-        <form action="/delivery-addresses" method="post" class="row g-3 mb-4 border rounded p-3">
-            <div class="col-md-6">
-                <label class="form-label">수령인</label>
-                <input type="text" name="recipientName" class="form-control" required>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">우편번호</label>
-                <div class="input-group">
-                    <input type="text" id="zipCode" name="zipCode" class="form-control" readonly required>
-                    <button type="button" class="btn btn-outline-secondary" onclick="openPostcode()">주소 찾기</button>
-                </div>
-            </div>
-
-            <div class="col-12">
-                <label class="form-label">주소1</label>
-                <input type="text" id="addressLine1" name="addressLine1" class="form-control" readonly required>
-            </div>
-
-            <div class="col-12">
-                <label class="form-label">주소2 (상세주소)</label>
-                <input type="text" name="addressLine2" class="form-control" required>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">전화번호</label>
-                <input type="tel" name="phoneNumber" class="form-control" required>
-            </div>
-
-            <div class="col-md-6 d-flex align-items-end">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="default" id="defaultAddress">
-                    <label class="form-check-label" for="defaultAddress">기본배송지로 설정</label>
-                </div>
-            </div>
-
-            <div class="col-12">
-                <button type="submit" class="btn btn-success w-100">등록</button>
-            </div>
-        </form>
-
-        <!-- 카카오 주소 모달 -->
-        <div id="postcodeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:1050; background:rgba(0,0,0,0.5);">
-            <!-- 닫기 버튼 -->
-            <button onclick="closePostcodeModal()"
-                    style="position:absolute;top:15px;right:20px;z-index:1100;font-size:2rem;border:none;background:none;color:white;cursor:pointer;"
-                    aria-label="Close modal">✖</button>
-
-            <!-- 카카오 API가 삽입될 영역 -->
-            <div id="postcodeLayer"
-                 style="position:relative;width:90%;max-width:600px;height:500px;margin:100px auto;background:white;border-radius:8px;overflow:hidden;">
-            </div>
-        </div>
-
-        <!-- 배송지 리스트 -->
-        <div th:if="${#lists.isEmpty(userProfile.deliveryAddresses)}">
+        <div th:if="${#lists.isEmpty(userProfile.deliveryAddresses)}" class="alert alert-warning">
             배송지가 등록되어 있지 않습니다.
         </div>
         <div th:if="${!#lists.isEmpty(userProfile.deliveryAddresses)}">
@@ -146,15 +90,18 @@
                     <td th:text="${addr.addressLine1}"></td>
                     <td th:text="${addr.addressLine2}"></td>
                     <td th:text="${addr.phoneNumber}"></td>
-                    <td>
-                        <span th:if="${addr.default}">✔</span>
-                        <span th:unless="${addr.default}"></span>
-                    </td>
+                    <td><span th:if="${addr.default}">✔</span></td>
                     <td th:text="${#temporals.format(addr.createAt, 'yyyy-MM-dd HH:mm')}"></td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- 배송지 추가 버튼 -->
+        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addressRegisterModal">배송지 추가</button>
+
+        <!-- 배송지 등록 모달 -->
+        <div th:replace="~{fragments/registerAddress :: registerAddress}"></div>
 
     </main>
 
@@ -162,8 +109,9 @@
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 
     <!-- Bootstrap js -->
+    <!-- ✅ 카카오 주소 검색 스크립트 -->
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script th:src="@{/js/user/profile.js}"></script>
 </body>
 </html>
