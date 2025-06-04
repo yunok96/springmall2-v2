@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
             addressLine1: form.querySelector('input[name="addressLine1"]').value,
             addressLine2: form.querySelector('input[name="addressLine2"]').value,
             phoneNumber: form.querySelector('input[name="phoneNumber"]').value,
-            default: form.querySelector('input[name="defaultAddress"]').checked
+            default: form.querySelector('input[name="default"]').checked
         };
 
         try {

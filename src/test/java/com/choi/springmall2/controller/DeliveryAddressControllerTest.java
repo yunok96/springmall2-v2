@@ -4,14 +4,10 @@ import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.DeliveryAddressRegisterDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressResponseDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressUpdateDto;
-import com.choi.springmall2.domain.dto.UserRegisterDto;
 import com.choi.springmall2.service.DeliveryAddressService;
-import com.choi.springmall2.service.ProductService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,15 +21,14 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ProductController.class)
-@AutoConfigureMockMvc(addFilters = false) // 시큐리티 필터 제거
+@WebMvcTest(DeliveryAddressController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class DeliveryAddressControllerTest {
 
     @Autowired
@@ -43,8 +38,7 @@ class DeliveryAddressControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private DeliveryAddressService deliveryAddressService;
-
+    DeliveryAddressService deliveryAddressService;
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "BUYER")
@@ -110,11 +104,11 @@ class DeliveryAddressControllerTest {
         auth.setAuthenticated(true); // 인증된 사용자로 설정
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        DeliveryAddressResponseDto dto = new DeliveryAddressResponseDto();
+        DeliveryAddressRegisterDto dto = new DeliveryAddressRegisterDto();
         dto.setRecipientName("철수");
-        dto.setZipCode("12345");
 
-        doNothing().when(deliveryAddressService).saveDeliveryAddress(any(DeliveryAddressRegisterDto.class), 1);
+//        doNothing().when(deliveryAddressService).saveDeliveryAddress(any(DeliveryAddressRegisterDto.class), 1);
+        doNothing().when(deliveryAddressService).saveDeliveryAddress(any(DeliveryAddressRegisterDto.class), eq(1));
 
         // when
         ResultActions result = mockMvc.perform(post(url)
@@ -130,12 +124,12 @@ class DeliveryAddressControllerTest {
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "BUYER")
-    @DisplayName("배송지 수정 - 기존 배송지 없음")
-    void addressUpdate_addressNotExist() throws Exception {
+    @DisplayName("배송지 수정 - 실패")
+    void addressUpdate_fail() throws Exception {
         // given
-        String url = "/api/address/register";
+        String url = "/api/address/update";
 
-        DeliveryAddressRegisterDto dto = new DeliveryAddressRegisterDto();
+        DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
         dto.setRecipientName("철수 - 수정");
 
         CustomUser customUser = new CustomUser(1, "test@example.com", "철수", "encodedPassword", List.of());
@@ -143,10 +137,10 @@ class DeliveryAddressControllerTest {
         auth.setAuthenticated(true); // 인증된 사용자로 설정
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        doThrow(new RuntimeException("에러")).when(deliveryAddressService).updateDeliveryAddress(any(DeliveryAddressUpdateDto.class), 1);
+        doThrow(new RuntimeException("에러")).when(deliveryAddressService).updateDeliveryAddress(any(DeliveryAddressUpdateDto.class), eq(1));
 
         // when
-        ResultActions result = mockMvc.perform(post(url)
+        ResultActions result = mockMvc.perform(put(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         );
@@ -158,31 +152,85 @@ class DeliveryAddressControllerTest {
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "BUYER")
-    @DisplayName("배송지 수정 - 사용자 권한 없음")
-    void addressUpdate_userAccessDenied() {
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com", roles = "BUYER")
     @DisplayName("배송지 수정 - 성공")
-    void addressUpdate_pass() {
+    void addressUpdate_pass() throws Exception {
+        // given
+        String url = "/api/address/update";
+
+        DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
+        dto.setRecipientName("철수 - 수정");
+
+        CustomUser customUser = new CustomUser(1, "test@example.com", "철수", "encodedPassword", List.of());
+        TestingAuthenticationToken auth = new TestingAuthenticationToken(customUser, null);
+        auth.setAuthenticated(true); // 인증된 사용자로 설정
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        doNothing().when(deliveryAddressService).updateDeliveryAddress(any(DeliveryAddressUpdateDto.class), eq(1));
+
+        // when
+        ResultActions result = mockMvc.perform(put(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+        );
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("배송지 수정이 완료되었습니다."));
     }
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "BUYER")
-    @DisplayName("배송지 삭제 - 기존 배송지 없음")
-    void addressDelete_addressNotExist() {
-    }
+    @DisplayName("배송지 삭제 - 실패")
+    void addressDelete_fail() throws Exception {
+        // given
+        String url = "/api/address/delete";
 
-    @Test
-    @WithMockUser(username = "test@example.com", roles = "BUYER")
-    @DisplayName("배송지 삭제 - 사용자 권한 없음")
-    void addressDelete_userAccessDenied() {
+        DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
+        dto.setRecipientName("철수 - 수정");
+
+        CustomUser customUser = new CustomUser(1, "test@example.com", "철수", "encodedPassword", List.of());
+        TestingAuthenticationToken auth = new TestingAuthenticationToken(customUser, null);
+        auth.setAuthenticated(true); // 인증된 사용자로 설정
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        doThrow(new RuntimeException("에러")).when(deliveryAddressService).deleteDeliveryAddress(any(DeliveryAddressUpdateDto.class), eq(1));
+
+        // when
+        ResultActions result = mockMvc.perform(delete(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("배송지 삭제 중 오류가 발생했습니다."));
     }
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "BUYER")
     @DisplayName("배송지 삭제 - 성공")
-    void addressDelete_pass() {
+    void addressDelete_pass() throws Exception {
+        // given
+        String url = "/api/address/delete";
+
+        DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
+        dto.setId(1);
+
+        CustomUser customUser = new CustomUser(1, "test@example.com", "철수", "encodedPassword", List.of());
+        TestingAuthenticationToken auth = new TestingAuthenticationToken(customUser, null);
+        auth.setAuthenticated(true); // 인증된 사용자로 설정
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        doThrow(new RuntimeException("에러")).when(deliveryAddressService).deleteDeliveryAddress(any(DeliveryAddressUpdateDto.class), eq(1));
+
+        // when
+        ResultActions result = mockMvc.perform(delete(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+        );
+
+        // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("배송지 삭제 중 오류가 발생했습니다."));
     }
 }

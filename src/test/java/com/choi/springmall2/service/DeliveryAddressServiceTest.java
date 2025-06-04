@@ -4,6 +4,7 @@ import com.choi.springmall2.domain.dto.DeliveryAddressRegisterDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressResponseDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressUpdateDto;
 import com.choi.springmall2.domain.entity.DeliveryAddress;
+import com.choi.springmall2.domain.entity.User;
 import com.choi.springmall2.repository.DeliveryAddressRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +35,7 @@ class DeliveryAddressServiceTest {
     private DeliveryAddressService deliveryAddressService;
 
     @Test
-    @DisplayName("")
+    @DisplayName("사용자 배송지 정보 조회")
     void getUserDeliveryAddress() {
         // given
         int userId = 1;
@@ -49,6 +51,7 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
+    @DisplayName("배송지 정보 List<Vo> 매핑")
     void getDeliveryAddressVos() {
         // given
         DeliveryAddress address = new DeliveryAddress();
@@ -85,7 +88,7 @@ class DeliveryAddressServiceTest {
     }
 
     @Test
-    @DisplayName("사용자 배송지 목록 조회 - 배송지 조회")
+    @DisplayName("사용자 배송지 목록 조회 - 성공")
     void getDeliveryAddresses_pass() {
         // given
         int userId = 1;
@@ -121,8 +124,10 @@ class DeliveryAddressServiceTest {
         dto.setPhoneNumber("01098765432");
         dto.setDefault(false);
 
+        int userId = 1;
+
         // when
-        deliveryAddressService.saveDeliveryAddress(dto);
+        deliveryAddressService.saveDeliveryAddress(dto, userId);
 
         // then
         verify(deliveryAddressRepository, times(1)).save(any(DeliveryAddress.class));
@@ -136,16 +141,22 @@ class DeliveryAddressServiceTest {
         dto.setId(1);
         given(deliveryAddressRepository.findById(1)).willReturn(Optional.empty());
 
+        int userId = 1;
+
         // when & then
-        assertThrows(IllegalArgumentException.class, () -> deliveryAddressService.updateDeliveryAddress(dto));
+        assertThrows(IllegalArgumentException.class, () -> deliveryAddressService.updateDeliveryAddress(dto, userId));
     }
 
     @Test
-    @DisplayName("배송지 정보 수정 - 성공")
-    void updateDeliveryAddress_pass() {
+    @DisplayName("배송지 정보 수정 - 접근 권한 없음")
+    void updateDeliveryAddress_accessDenied() {
         // given
+        User user = new User();
+        user.setId(1);
+
         DeliveryAddress address = new DeliveryAddress();
         address.setId(1);
+        address.setUser(user);
         given(deliveryAddressRepository.findById(1)).willReturn(Optional.of(address));
 
         DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
@@ -157,8 +168,37 @@ class DeliveryAddressServiceTest {
         dto.setPhoneNumber("01098765432");
         dto.setDefault(false);
 
+        int userId = 2;
+
+        // when & then
+        assertThrows(AccessDeniedException.class, () -> deliveryAddressService.updateDeliveryAddress(dto, userId));
+    }
+
+    @Test
+    @DisplayName("배송지 정보 수정 - 성공")
+    void updateDeliveryAddress_pass() {
+        // given
+        User user = new User();
+        user.setId(1);
+
+        DeliveryAddress address = new DeliveryAddress();
+        address.setId(1);
+        address.setUser(user);
+        given(deliveryAddressRepository.findById(1)).willReturn(Optional.of(address));
+
+        DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
+        dto.setId(1);
+        dto.setRecipientName("철수-수정");
+        dto.setZipCode("54321");
+        dto.setAddressLine1("부산시 해운대구");
+        dto.setAddressLine2("202호");
+        dto.setPhoneNumber("01098765432");
+        dto.setDefault(false);
+
+        int userId = 1;
+
         // when
-        deliveryAddressService.updateDeliveryAddress(dto);
+        deliveryAddressService.updateDeliveryAddress(dto, userId);
 
         // then
         verify(deliveryAddressRepository).save(address);
@@ -173,23 +213,52 @@ class DeliveryAddressServiceTest {
         dto.setId(1);
         given(deliveryAddressRepository.findById(1)).willReturn(Optional.empty());
 
+        int userId = 1;
+
         // when/then
-        assertThrows(IllegalArgumentException.class, () -> deliveryAddressService.deleteDeliveryAddress(dto));
+        assertThrows(IllegalArgumentException.class, () -> deliveryAddressService.deleteDeliveryAddress(dto, userId));
+    }
+
+    @Test
+    @DisplayName("배송지 정보 삭제 - 접근 권한 없음")
+    void deleteDeliveryAddress_accessDenied() {
+        // given
+        User user = new User();
+        user.setId(1);
+
+        DeliveryAddress address = new DeliveryAddress();
+        address.setId(1);
+        address.setUser(user);
+        given(deliveryAddressRepository.findById(1)).willReturn(Optional.of(address));
+
+        DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
+        dto.setId(1);
+
+        int userId = 2;
+
+        // when/then
+        assertThrows(AccessDeniedException.class, () -> deliveryAddressService.deleteDeliveryAddress(dto, userId));
     }
 
     @Test
     @DisplayName("배송지 정보 삭제 - 성공")
     void deleteDeliveryAddress_pass() {
         // given
+        User user = new User();
+        user.setId(1);
+
         DeliveryAddress address = new DeliveryAddress();
         address.setId(1);
+        address.setUser(user);
         given(deliveryAddressRepository.findById(1)).willReturn(Optional.of(address));
 
         DeliveryAddressUpdateDto dto = new DeliveryAddressUpdateDto();
         dto.setId(1);
 
+        int userId = 1;
+
         // when
-        deliveryAddressService.deleteDeliveryAddress(dto);
+        deliveryAddressService.deleteDeliveryAddress(dto, userId);
 
         // then
         verify(deliveryAddressRepository).delete(address);
