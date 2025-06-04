@@ -1,5 +1,6 @@
 package com.choi.springmall2.controller;
 
+import com.choi.springmall2.domain.CustomUser;
 import com.choi.springmall2.domain.dto.DeliveryAddressRegisterDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressResponseDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressUpdateDto;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +25,9 @@ public class DeliveryAddressController {
 
     @GetMapping("/api/address/list")
     @ResponseBody
-    public ResponseEntity<?> addressList(@RequestParam int userId) {
+    public ResponseEntity<?> addressList(@AuthenticationPrincipal CustomUser customUser) {
         try {
+            int userId = customUser.getId();
             List<DeliveryAddressResponseDto> addresses = deliveryAddressService.getDeliveryAddresses(userId);
             return ResponseEntity.ok(addresses);
         } catch (Exception e) {
@@ -33,12 +36,13 @@ public class DeliveryAddressController {
         }
     }
 
-
     @PostMapping("/api/address/register")
     @ResponseBody
-    public ResponseEntity<?> addressRegister(@RequestBody DeliveryAddressRegisterDto deliveryAddressRegisterDto) {
+    public ResponseEntity<?> addressRegister(@RequestBody DeliveryAddressRegisterDto deliveryAddressRegisterDto
+            , @AuthenticationPrincipal CustomUser customUser) {
         try {
-            deliveryAddressService.saveDeliveryAddress(deliveryAddressRegisterDto);
+            int userId = customUser.getId();
+            deliveryAddressService.saveDeliveryAddress(deliveryAddressRegisterDto, userId);
             return ResponseEntity.ok(Map.of("message", "신규 배송지가 등록되었습니다."));
         } catch (Exception e) {
             log.error("Error registering delivery address: {}", e.getMessage(), e);
@@ -48,9 +52,11 @@ public class DeliveryAddressController {
 
     @PutMapping("/api/address/update")
     @ResponseBody
-    public ResponseEntity<?> addressUpdate(@RequestBody DeliveryAddressUpdateDto deliveryAddressUpdateDto) {
+    public ResponseEntity<?> addressUpdate(@RequestBody DeliveryAddressUpdateDto deliveryAddressUpdateDto
+            , @AuthenticationPrincipal CustomUser customUser) {
         try {
-            deliveryAddressService.updateDeliveryAddress(deliveryAddressUpdateDto);
+            int userId = customUser.getId();
+            deliveryAddressService.updateDeliveryAddress(deliveryAddressUpdateDto, userId);
             return ResponseEntity.ok(Map.of("message", "배송지 수정이 완료되었습니다."));
         } catch (Exception e) {
             log.error("Error updating delivery address: {}", e.getMessage(), e);
@@ -60,9 +66,11 @@ public class DeliveryAddressController {
 
     @DeleteMapping("/api/address/delete")
     @ResponseBody
-    public ResponseEntity<?> addressDelete(@RequestBody DeliveryAddressUpdateDto deliveryAddressUpdateDto) {
+    public ResponseEntity<?> addressDelete(@RequestBody DeliveryAddressUpdateDto deliveryAddressUpdateDto
+            , @AuthenticationPrincipal CustomUser customUser) {
         try {
-            deliveryAddressService.deleteDeliveryAddress(deliveryAddressUpdateDto);
+            int userId = customUser.getId();
+            deliveryAddressService.deleteDeliveryAddress(deliveryAddressUpdateDto, userId);
             return ResponseEntity.ok(Map.of("message", "배송지 삭제가 완료되었습니다."));
         } catch (Exception e) {
             log.error("Error deleting delivery address: {}", e.getMessage(), e);

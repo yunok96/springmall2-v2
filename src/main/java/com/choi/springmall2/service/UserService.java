@@ -92,6 +92,7 @@ public class UserService {
      */
     public UserAddressProfileDto getUserProfileDto(int userId) {
         User user = getUserById(userId);
+        // TODO : DTO 로 전환 필요
         List<DeliveryAddress> deliveryAddresses = deliveryAddressService.getUserDeliveryAddress(userId);
 
         UserAddressProfileDto userAddressProfileDto = new UserAddressProfileDto();

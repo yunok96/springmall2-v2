@@ -4,10 +4,12 @@ import com.choi.springmall2.domain.dto.DeliveryAddressRegisterDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressResponseDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressUpdateDto;
 import com.choi.springmall2.domain.entity.DeliveryAddress;
+import com.choi.springmall2.domain.entity.User;
 import com.choi.springmall2.domain.vo.DeliveryAddressVo;
 import com.choi.springmall2.repository.DeliveryAddressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -50,37 +52,42 @@ public class DeliveryAddressService {
         return deliveryAddressVos;
     }
 
+    /**
+     * 사용자 배송지 목록 DTO 반환
+     * @param userId 사용자 id
+     * @return responseDTOs
+     */
     public List<DeliveryAddressResponseDto> getDeliveryAddresses(int userId) {
         List<DeliveryAddress> deliveryAddresses = deliveryAddressRepository.findByUserId(userId);
         if (deliveryAddresses == null || deliveryAddresses.isEmpty()) {
             return new ArrayList<>();
         }
 
-        List<DeliveryAddressResponseDto> responseDtos = new ArrayList<>();
+        List<DeliveryAddressResponseDto> responseDTOs = new ArrayList<>();
         for (DeliveryAddress deliveryAddress : deliveryAddresses) {
+            DeliveryAddressResponseDto responseDTO = new DeliveryAddressResponseDto();
+            responseDTO.setId(deliveryAddress.getId());
+            responseDTO.setRecipientName(deliveryAddress.getRecipientName());
+            responseDTO.setZipCode(deliveryAddress.getZipCode());
+            responseDTO.setAddressLine1(deliveryAddress.getAddressLine1());
+            responseDTO.setAddressLine2(deliveryAddress.getAddressLine2());
+            responseDTO.setPhoneNumber(deliveryAddress.getPhoneNumber());
+            responseDTO.setDefault(deliveryAddress.isDefault());
+            responseDTO.setCreateAt(deliveryAddress.getCreateAt());
 
-
-            // TODO : Implement logic for mapping Entity to Dto
-//            DeliveryAddressResponseDto responseDto = new DeliveryAddressResponseDto(
-//                    deliveryAddress.getId(),
-//                    deliveryAddress.getRecipientName(),
-//                    deliveryAddress.getZipCode(),
-//                    deliveryAddress.getAddressLine1(),
-//                    deliveryAddress.getAddressLine2(),
-//                    deliveryAddress.getPhoneNumber(),
-//                    deliveryAddress.isDefault()
-//            );
-//            responseDtos.add(responseDto);
+            responseDTOs.add(responseDTO);
         }
-        return responseDtos;
-
+        return responseDTOs;
     }
 
     /**
      * 배송지 정보 저장
      * @param deliveryAddressRegisterDto 배송지 정보 등록 DTO
      */
-    public void saveDeliveryAddress(DeliveryAddressRegisterDto deliveryAddressRegisterDto) {
+    public void saveDeliveryAddress(DeliveryAddressRegisterDto deliveryAddressRegisterDto, int userId) {
+        User user = new User();
+        user.setId(userId);
+
         DeliveryAddress deliveryAddress = new DeliveryAddress();
 
         deliveryAddress.setRecipientName(deliveryAddressRegisterDto.getRecipientName());
@@ -89,6 +96,7 @@ public class DeliveryAddressService {
         deliveryAddress.setAddressLine2(deliveryAddressRegisterDto.getAddressLine2());
         deliveryAddress.setPhoneNumber(deliveryAddressRegisterDto.getPhoneNumber());
         deliveryAddress.setDefault(deliveryAddressRegisterDto.isDefault());
+        deliveryAddress.setUser(user);
 
         deliveryAddressRepository.save(deliveryAddress);
     }
@@ -98,7 +106,7 @@ public class DeliveryAddressService {
      * @param deliveryAddressUpdateDto 배송지 정보 수정 DTO
      * @throws IllegalArgumentException 배송지 정보를 찾을 수 없는 경우
      */
-    public void updateDeliveryAddress(DeliveryAddressUpdateDto deliveryAddressUpdateDto) {
+    public void updateDeliveryAddress(DeliveryAddressUpdateDto deliveryAddressUpdateDto, int userId) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressUpdateDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
 
@@ -109,6 +117,10 @@ public class DeliveryAddressService {
         deliveryAddress.setPhoneNumber(deliveryAddressUpdateDto.getPhoneNumber());
         deliveryAddress.setDefault(deliveryAddressUpdateDto.isDefault());
 
+        if ( deliveryAddress.getUser().getId() != userId) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
         deliveryAddressRepository.save(deliveryAddress);
     }
 
@@ -117,9 +129,13 @@ public class DeliveryAddressService {
      * @param deliveryAddressUpdateDto 배송지 정보 수정 DTO
      * @throws IllegalArgumentException 배송지 정보를 찾을 수 없는 경우
      */
-    public void deleteDeliveryAddress(DeliveryAddressUpdateDto deliveryAddressUpdateDto) {
+    public void deleteDeliveryAddress(DeliveryAddressUpdateDto deliveryAddressUpdateDto, int userId) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressUpdateDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
+
+        if ( deliveryAddress.getUser().getId() != userId) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
 
         deliveryAddressRepository.delete(deliveryAddress);
     }
