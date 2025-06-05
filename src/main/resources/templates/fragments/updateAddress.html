@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div th:fragment="updateAddress" class="modal fade" id="addressUpdateModal" tabindex="-1" aria-labelledby="addressUpdateModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/api/address/update" method="post" id="putAddress">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addressUpdateModalLabel">배송지 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id">
+                    <div class="mb-3">
+                        <label for="recipientName" class="form-label">수령인</label>
+                        <input type="text" class="form-control" id="recipientName" name="recipientName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="zipCode" class="form-label">우편번호</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="zipCode" name="zipCode" readonly required>
+                            <button type="button" id="findAddressBtn" class="btn btn-outline-secondary">주소 찾기</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="addressLine1" class="form-label">주소1</label>
+                        <input type="text" class="form-control" id="addressLine1" name="addressLine1" readonly required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="addressLine2" class="form-label">주소2 (상세주소)</label>
+                        <input type="text" class="form-control" id="addressLine2" name="addressLine2" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label">전화번호</label>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" required>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="defaultAddress" name="default">
+                        <label class="form-check-label" for="defaultAddress">기본배송지로 설정</label>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success w-100">수정</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

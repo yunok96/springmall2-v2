@@ -1,4 +1,6 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+
+    await loadAddressList();
 
     // "비밀번호 초기화" 버튼 클릭 이벤트
     const resetPasswordBtn = document.getElementById("resetPasswordBtn");
@@ -72,9 +74,58 @@ document.addEventListener("DOMContentLoaded", function () {
                 // register form initialize
                 document.getElementById("postAddress").reset();
 
-                // 주소 목록 갱신
+                // refresh address list
+                await loadAddressList();
 
+            } else {
+                alert(result.message);
+            }
 
+        } catch (error) {
+            console.error("에러 발생:", error);
+            alert("오류가 발생했습니다.");
+        }
+    });
+
+    // 주소 수정 이벤트
+    document.getElementById("putAddress").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const form = document.getElementById("putAddress");
+
+        const data = {
+            id: form.querySelector('input[name="id"]').value,
+            recipientName: form.querySelector('input[name="recipientName"]').value,
+            zipCode: form.querySelector('input[name="zipCode"]').value,
+            addressLine1: form.querySelector('input[name="addressLine1"]').value,
+            addressLine2: form.querySelector('input[name="addressLine2"]').value,
+            phoneNumber: form.querySelector('input[name="phoneNumber"]').value,
+            default: form.querySelector('input[name="default"]').checked
+        };
+
+        try {
+            const response = await fetch("/api/address/update", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById("addressUpdateModal")); // modal1 → 모달의 id
+                modal.hide();
+
+                // register form initialize
+                document.getElementById("putAddress").reset();
+
+                // refresh address list
+                await loadAddressList();
 
             } else {
                 alert(result.message);
@@ -91,19 +142,173 @@ document.addEventListener("DOMContentLoaded", function () {
         const response = await fetch("/api/address/list");
         const addresses = await response.json();
 
-        const listContainer = document.getElementById("addressList");
-        listContainer.innerHTML = ""; // 기존 목록 비우기
+        const noAddressAlert = document.getElementById("noAddressAlert");
+        const addressList = document.getElementById("addressList");
 
-        addresses.forEach(address => {
-            const item = document.createElement("div");
-            item.className = "address-item mb-2 p-2 border rounded";
-            item.innerHTML = `
-            <strong>${address.recipientName}</strong> (${address.phoneNumber})<br>
-            ${address.addressLine1} ${address.addressLine2} (${address.zipCode})<br>
-            ${address.default ? "<span class='badge bg-primary'>기본배송지</span>" : ""}
-        `;
-            listContainer.appendChild(item);
-        });
+        const addressListContainer = addressList; // div with class row row-cols-1 row-cols-md-2 g-4 d-none
+        addressListContainer.innerHTML = ""; // 기존 내용 초기화
+
+        if (!addresses || addresses.length === 0) {
+            // 주소 없을 때
+            noAddressAlert.classList.remove("d-none");
+            addressList.classList.add("d-none");
+        } else {
+            // 주소 있을 때
+            noAddressAlert.classList.add("d-none");
+            addressList.classList.remove("d-none");
+
+            addresses.forEach(address => {
+                // 각 주소마다 카드 div.col 생성
+                const col = document.createElement("div");
+                col.className = "col";
+
+                const card = document.createElement("div");
+                card.className = "card h-100";
+                card.dataset.id = address.id;
+
+                const cardBody = document.createElement("div");
+                cardBody.className = "card-body";
+
+                // 카드 타이틀 (수령인 + 기본배송지 배지)
+                const title = document.createElement("h5");
+                title.className = "card-title";
+                title.textContent = address.recipientName;
+
+                if (address.default) {
+                    const badge = document.createElement("span");
+                    badge.className = "badge bg-primary ms-2";
+                    badge.textContent = "기본배송지";
+                    title.appendChild(badge);
+                }
+                cardBody.appendChild(title);
+
+                // 우편번호
+                const zip = document.createElement("p");
+                zip.className = "card-text mb-1";
+                zip.innerHTML = `<strong>우편번호:</strong> ${address.zipCode}`;
+                cardBody.appendChild(zip);
+
+                // 주소
+                const addr1 = document.createElement("p");
+                addr1.className = "card-text mb-1";
+                addr1.innerHTML = `<strong>주소:</strong> ${address.addressLine1}`;
+                cardBody.appendChild(addr1);
+
+                // 상세주소
+                const addr2 = document.createElement("p");
+                addr2.className = "card-text mb-1";
+                addr2.innerHTML = `<strong>상세주소:</strong> ${address.addressLine2}`;
+                cardBody.appendChild(addr2);
+
+                // 전화번호
+                const phone = document.createElement("p");
+                phone.className = "card-text mb-1";
+                phone.innerHTML = `<strong>전화번호:</strong> ${address.phoneNumber}`;
+                cardBody.appendChild(phone);
+
+                // 등록일 (yyyy-MM-dd HH:mm 형식으로 가정)
+                const regDate = document.createElement("p");
+                regDate.className = "card-text";
+                const formattedDate = new Date(address.createAt).toLocaleString("ko-KR", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
+                regDate.innerHTML = `<strong>등록일:</strong> ${formattedDate}`;
+                cardBody.appendChild(regDate);
+                card.appendChild(cardBody);
+
+                // 카드 푸터 - 수정, 삭제 버튼
+                const cardFooter = document.createElement("div");
+                cardFooter.className = "card-footer text-end";
+
+                const btnEdit = createEditButton(address);
+                const btnDelete = createDeleteButton(address.id);
+
+                cardFooter.appendChild(btnEdit);
+                cardFooter.appendChild(btnDelete);
+
+                card.appendChild(cardFooter);
+                col.appendChild(card);
+
+                addressListContainer.appendChild(col);
+            });
+        }
     }
 
+    // 수정 버튼 생성 함수
+    function createEditButton(address) {
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-sm btn-primary me-2 text-white";
+        btnEdit.textContent = "수정";
+
+        const form = document.getElementById("putAddress");
+
+        btnEdit.addEventListener("click", () => {
+            // 모달 input 요소에 값 설정
+            form.querySelector('input[name="id"]').value = address.id;
+            form.querySelector('input[name="recipientName"]').value = address.recipientName;
+            form.querySelector('input[name="zipCode"]').value = address.zipCode;
+            form.querySelector('input[name="addressLine1"]').value = address.addressLine1;
+            form.querySelector('input[name="addressLine2"]').value = address.addressLine2;
+            form.querySelector('input[name="phoneNumber"]').value = address.phoneNumber;
+            form.querySelector('input[name="default"]').checked = address.default;
+
+            // 모달 열기
+            const modal = new bootstrap.Modal(document.getElementById("addressUpdateModal"));
+            modal.show();
+        });
+
+        return btnEdit;
+    }
+
+    // 삭제 버튼 생성 함수
+    function createDeleteButton(addressId) {
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn btn-sm btn-danger text-white";
+        btnDelete.textContent = "삭제";
+
+        btnDelete.addEventListener("click", () => {
+            if (confirm("배송지를 삭제하시겠습니까?")) {
+                deleteAddress(addressId);
+            }
+        });
+
+        return btnDelete;
+    }
+
+    // 주소 삭제 api
+    async function deleteAddress(addressId) {
+        const data = {
+            id: addressId
+        };
+
+        try {
+            const response = await fetch("/api/address/delete", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+
+                // refresh address list
+                await loadAddressList();
+            } else {
+                alert(result.message);
+            }
+
+        } catch (error) {
+            console.error("에러 발생:", error);
+            alert("오류가 발생했습니다.");
+        }
+
+    }
 });

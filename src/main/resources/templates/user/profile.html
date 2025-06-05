@@ -67,34 +67,11 @@
         <!-- 주소 목록 -->
         <h3 class="mb-4">배송지</h3>
 
-        <div th:if="${#lists.isEmpty(userProfile.deliveryAddresses)}" class="alert alert-warning">
+        <div id="noAddressAlert" class="alert alert-warning d-none">
             배송지가 등록되어 있지 않습니다.
         </div>
-        <div th:if="${!#lists.isEmpty(userProfile.deliveryAddresses)}">
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th>수령인</th>
-                    <th>우편번호</th>
-                    <th>주소1</th>
-                    <th>주소2</th>
-                    <th>전화번호</th>
-                    <th>기본배송지</th>
-                    <th>등록일</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="addr : ${userProfile.deliveryAddresses}">
-                    <td th:text="${addr.recipientName}"></td>
-                    <td th:text="${addr.zipCode}"></td>
-                    <td th:text="${addr.addressLine1}"></td>
-                    <td th:text="${addr.addressLine2}"></td>
-                    <td th:text="${addr.phoneNumber}"></td>
-                    <td><span th:if="${addr.default}">✔</span></td>
-                    <td th:text="${#temporals.format(addr.createAt, 'yyyy-MM-dd HH:mm')}"></td>
-                </tr>
-                </tbody>
-            </table>
+
+        <div id="addressList" class="row row-cols-1 row-cols-md-2 g-4 d-none">
         </div>
 
         <!-- 배송지 추가 버튼 -->
@@ -102,6 +79,9 @@
 
         <!-- 배송지 등록 모달 -->
         <div th:replace="~{fragments/registerAddress :: registerAddress}"></div>
+
+        <!-- 배송지 수정 모달 -->
+        <div th:replace="~{fragments/updateAddress :: updateAddress}"></div>
 
     </main>
 

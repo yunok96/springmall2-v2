@@ -3,11 +3,10 @@ package com.choi.springmall2.service;
 import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.Role;
 import com.choi.springmall2.domain.dto.TokenDto;
-import com.choi.springmall2.domain.dto.UserAddressProfileDto;
+import com.choi.springmall2.domain.dto.UserProfileResponseDto;
+import com.choi.springmall2.domain.dto.UserProfileUpdateDto;
 import com.choi.springmall2.domain.dto.UserRegisterDto;
-import com.choi.springmall2.domain.entity.DeliveryAddress;
 import com.choi.springmall2.domain.entity.User;
-import com.choi.springmall2.domain.vo.DeliveryAddressVo;
 import com.choi.springmall2.error.exceptions.UserNotFoundException;
 import com.choi.springmall2.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -88,33 +85,28 @@ public class UserService {
     /**
      * 사용자 프로필 Dto 반환
      * @param userId 사용자 id
-     * @return userProfileDto 사용자 정보 + 배송지 목록 Dto
+     * @return userProfileResponseDto 사용자 정보 Dto
      */
-    public UserAddressProfileDto getUserProfileDto(int userId) {
+    public UserProfileResponseDto getUserProfileDto(int userId) {
         User user = getUserById(userId);
-        // TODO : DTO 로 전환 필요
-        List<DeliveryAddress> deliveryAddresses = deliveryAddressService.getUserDeliveryAddress(userId);
 
-        UserAddressProfileDto userAddressProfileDto = new UserAddressProfileDto();
-        userAddressProfileDto.setEmail(user.getEmail());
-        userAddressProfileDto.setNickname(user.getNickname());
-        userAddressProfileDto.setRole(user.getRole());
-        userAddressProfileDto.setCreateAt(user.getCreateAt());
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto();
+        userProfileResponseDto.setEmail(user.getEmail());
+        userProfileResponseDto.setNickname(user.getNickname());
+        userProfileResponseDto.setRole(user.getRole());
+        userProfileResponseDto.setCreateAt(user.getCreateAt());
 
-        List<DeliveryAddressVo> deliveryAddressVos = deliveryAddressService.getDeliveryAddressVos(deliveryAddresses);
-        userAddressProfileDto.setDeliveryAddresses(deliveryAddressVos);
-
-        return userAddressProfileDto;
+        return userProfileResponseDto;
     }
 
     /**
      * 사용자 프로필 수정. 수정 가능한 항목은 nickName 밖에 없음
-     * @param userAddressProfileDto 사용자 Dto
+     * @param userProfileUpdateDto 사용자 수정 Dto
      * @param userId 사용자 id
      */
-    public void updateUserProfile(UserAddressProfileDto userAddressProfileDto, int userId) {
+    public void updateUserProfile(UserProfileUpdateDto userProfileUpdateDto, int userId) {
         User user = getUserById(userId);
-        user.setNickname(userAddressProfileDto.getNickname());
+        user.setNickname(userProfileUpdateDto.getNickname());
         userRepository.save(user);
     }
 

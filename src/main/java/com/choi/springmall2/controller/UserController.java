@@ -2,10 +2,7 @@ package com.choi.springmall2.controller;
 
 import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.CustomUser;
-import com.choi.springmall2.domain.dto.LoginRequestDto;
-import com.choi.springmall2.domain.dto.TokenDto;
-import com.choi.springmall2.domain.dto.UserAddressProfileDto;
-import com.choi.springmall2.domain.dto.UserRegisterDto;
+import com.choi.springmall2.domain.dto.*;
 import com.choi.springmall2.error.exceptions.DuplicateUserException;
 import com.choi.springmall2.error.exceptions.UserNotFoundException;
 import com.choi.springmall2.service.PasswordResetService;
@@ -148,7 +145,12 @@ public class UserController {
         return "redirect:" + referer;
     }
 
-    // 프로필 페이지로 이동
+    /**
+     * 프로필 수정 화면으로 이동
+     * @param customUser 로그인한 사용자
+     * @param model userProfile
+     * @return user/profile
+     */
     @GetMapping("/profile")
     public String profilePage(@AuthenticationPrincipal CustomUser customUser, Model model) {
         if (customUser == null) {
@@ -158,20 +160,20 @@ public class UserController {
         int customUserId = customUser.getId();
 
         // 사용자 정보 조회
-        UserAddressProfileDto userAddressProfileDto = userService.getUserProfileDto(customUserId);
-        model.addAttribute("userProfile", userAddressProfileDto);
+        UserProfileResponseDto userProfileResponseDto = userService.getUserProfileDto(customUserId);
+        model.addAttribute("userProfile", userProfileResponseDto);
 
         return "user/profile";
     }
 
     /**
-     * 프로필 수정
+     * 프로필 수정 요청 전송
      * @param customUser 인증된 사용자 정보
-     * @param userAddressProfileDto 수정할 사용자 정보
+     * @param userProfileUpdateDto 수정할 사용자 정보
      * @return redirect:/profile
      */
     @PostMapping("/editProfile")
-    public String editProfile(@AuthenticationPrincipal CustomUser customUser, UserAddressProfileDto userAddressProfileDto) {
+    public String editProfile(@AuthenticationPrincipal CustomUser customUser, UserProfileUpdateDto userProfileUpdateDto) {
         if (customUser == null) {
             return "redirect:/login";
         }
@@ -179,7 +181,7 @@ public class UserController {
         int customUserId = customUser.getId();
 
         // 사용자 정보 수정
-        userService.updateUserProfile(userAddressProfileDto, customUserId);
+        userService.updateUserProfile(userProfileUpdateDto, customUserId);
 
         return "redirect:/profile";
     }
