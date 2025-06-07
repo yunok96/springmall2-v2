@@ -13,6 +13,8 @@ public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress
 
     List<DeliveryAddress> findByUserId(int userId);
 
+    int countByUserId(int userId);
+
     @Modifying
     @Query("UPDATE DeliveryAddress d SET d.isDefault = false WHERE d.user.id = :userId AND d.isDefault = true")
     void clearDefaultAddress(@Param("userId") int userId);

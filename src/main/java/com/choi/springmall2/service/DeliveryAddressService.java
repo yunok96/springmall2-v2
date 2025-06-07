@@ -59,20 +59,29 @@ public class DeliveryAddressService {
         User user = new User();
         user.setId(userId);
 
+        boolean isFirstAddress = deliveryAddressRepository.countByUserId(userId) == 0;
+
         DeliveryAddress deliveryAddress = new DeliveryAddress();
+
+        // 배송지가 아예 없으면 자동으로 기본 배송지로 지정
+        if (isFirstAddress) {
+            deliveryAddress.setDefault(true);
+        } else {
+            // 기본 배송지로 설정 요청한 경우, 기존 기본 배송지 해제
+            if (deliveryAddressRegisterDto.isDefault()) {
+                deliveryAddressRepository.clearDefaultAddress(userId);
+                deliveryAddress.setDefault(true);
+            } else {
+                deliveryAddress.setDefault(false);
+            }
+        }
 
         deliveryAddress.setRecipientName(deliveryAddressRegisterDto.getRecipientName());
         deliveryAddress.setZipCode(deliveryAddressRegisterDto.getZipCode());
         deliveryAddress.setAddressLine1(deliveryAddressRegisterDto.getAddressLine1());
         deliveryAddress.setAddressLine2(deliveryAddressRegisterDto.getAddressLine2());
         deliveryAddress.setPhoneNumber(deliveryAddressRegisterDto.getPhoneNumber());
-        deliveryAddress.setDefault(deliveryAddressRegisterDto.isDefault());
         deliveryAddress.setUser(user);
-
-        // 해당 유저의 기존 기본배송지를 전부 해제
-        if (deliveryAddressRegisterDto.isDefault()) {
-            deliveryAddressRepository.clearDefaultAddress(userId);
-        }
 
         deliveryAddressRepository.save(deliveryAddress);
     }
@@ -87,20 +96,29 @@ public class DeliveryAddressService {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressUpdateDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
 
+        boolean isFirstAddress = deliveryAddressRepository.countByUserId(userId) == 0;
+
+        // 배송지가 아예 없으면 자동으로 기본 배송지로 지정
+        if (isFirstAddress) {
+            deliveryAddress.setDefault(true);
+        } else {
+            // 기본 배송지로 설정 요청한 경우, 기존 기본 배송지 해제
+            if (deliveryAddressUpdateDto.isDefault()) {
+                deliveryAddressRepository.clearDefaultAddress(userId);
+                deliveryAddress.setDefault(true);
+            } else {
+                deliveryAddress.setDefault(false);
+            }
+        }
+
         deliveryAddress.setRecipientName(deliveryAddressUpdateDto.getRecipientName());
         deliveryAddress.setZipCode(deliveryAddressUpdateDto.getZipCode());
         deliveryAddress.setAddressLine1(deliveryAddressUpdateDto.getAddressLine1());
         deliveryAddress.setAddressLine2(deliveryAddressUpdateDto.getAddressLine2());
         deliveryAddress.setPhoneNumber(deliveryAddressUpdateDto.getPhoneNumber());
-        deliveryAddress.setDefault(deliveryAddressUpdateDto.isDefault());
 
         if ( deliveryAddress.getUser().getId() != userId) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
-
-        // 해당 유저의 기존 기본배송지를 전부 해제
-        if (deliveryAddressUpdateDto.isDefault()) {
-            deliveryAddressRepository.clearDefaultAddress(userId);
         }
 
         deliveryAddressRepository.save(deliveryAddress);
@@ -111,6 +129,7 @@ public class DeliveryAddressService {
      * @param deliveryAddressUpdateDto 배송지 정보 수정 DTO
      * @throws IllegalArgumentException 배송지 정보를 찾을 수 없는 경우
      */
+    @Transactional
     public void deleteDeliveryAddress(DeliveryAddressUpdateDto deliveryAddressUpdateDto, int userId) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressUpdateDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
