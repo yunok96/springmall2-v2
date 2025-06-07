@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,44 +32,6 @@ class DeliveryAddressServiceTest {
 
     @InjectMocks
     private DeliveryAddressService deliveryAddressService;
-
-    @Test
-    @DisplayName("사용자 배송지 정보 조회")
-    void getUserDeliveryAddress() {
-        // given
-        int userId = 1;
-        List<DeliveryAddress> addresses = new ArrayList<>();
-        given(deliveryAddressRepository.findByUserId(userId)).willReturn(addresses);
-
-        // when
-        List<DeliveryAddress> result = deliveryAddressService.getUserDeliveryAddress(userId);
-
-        // then
-        assertNotNull(result);
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("배송지 정보 List<Vo> 매핑")
-    void getDeliveryAddressVos() {
-        // given
-        DeliveryAddress address = new DeliveryAddress();
-        address.setRecipientName("홍길동");
-        address.setZipCode("12345");
-        address.setAddressLine1("서울시 강남구");
-        address.setAddressLine2("101호");
-        address.setPhoneNumber("01012345678");
-        address.setDefault(true);
-
-        List<DeliveryAddress> list = Arrays.asList(address);
-
-        // when
-        var vos = deliveryAddressService.getDeliveryAddressVos(list);
-
-        // then
-        assertEquals(1, vos.size());
-        assertEquals("홍길동", vos.get(0).recipientName());
-    }
 
     @Test
     @DisplayName("사용자 배송지 목록 조회 - 배송지 없음")

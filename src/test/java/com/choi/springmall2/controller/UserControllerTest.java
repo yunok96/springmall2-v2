@@ -2,10 +2,7 @@ package com.choi.springmall2.controller;
 
 import com.choi.springmall2.config.JwtTokenProvider;
 import com.choi.springmall2.domain.CustomUser;
-import com.choi.springmall2.domain.dto.LoginRequestDto;
-import com.choi.springmall2.domain.dto.TokenDto;
-import com.choi.springmall2.domain.dto.UserProfileUpdateDto;
-import com.choi.springmall2.domain.dto.UserRegisterDto;
+import com.choi.springmall2.domain.dto.*;
 import com.choi.springmall2.service.PasswordResetService;
 import com.choi.springmall2.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -259,35 +256,6 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "test@example.com", roles = "BUYER")
-    @DisplayName("로그인된 사용자가 프로필 페이지 요청 시, 뷰를 반환한다")
-    void profilePage_auth() throws Exception {
-        // given
-        String url = "/profile";
-
-        // CustomUser 객체 생성
-        CustomUser customUser = new CustomUser(1, "test@example.com", "tester", "encodedPassword", List.of());
-
-        // CustomUser를 인증 정보로 설정
-        TestingAuthenticationToken auth = new TestingAuthenticationToken(customUser, null);
-        auth.setAuthenticated(true); // 인증된 사용자로 설정
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        UserProfileUpdateDto dummyDto = new UserProfileUpdateDto();
-        dummyDto.setEmail("test@example.com");
-        given(userService.getUserProfileDto(1)).willReturn(dummyDto);
-
-        // when
-        ResultActions result = mockMvc.perform(get(url));
-
-        // then
-        result.andExpect(status().isOk())
-                .andExpect(view().name("user/profile"))
-                .andExpect(model().attributeExists("userProfile"))
-        ;
-    }
-
-    @Test
     @DisplayName("비로그인 사용자가 프로필 페이지 요청 시, /login으로 리다이렉트 된다")
     void profilePage_anonymous() throws Exception {
         // given
@@ -301,6 +269,33 @@ class UserControllerTest {
         // then
         result.andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com", roles = "BUYER")
+    @DisplayName("로그인된 사용자가 프로필 페이지 요청 시, 뷰를 반환한다")
+    void profilePage_pass() throws Exception {
+        // given
+        String url = "/profile";
+
+        // CustomUser 객체 생성 및 인증 정보로 설정
+        CustomUser customUser = new CustomUser(1, "test@example.com", "tester", "encodedPassword", List.of());
+        TestingAuthenticationToken auth = new TestingAuthenticationToken(customUser, null);
+        auth.setAuthenticated(true); // 인증된 사용자로 설정
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        UserProfileResponseDto dummyDto = new UserProfileResponseDto();
+        dummyDto.setEmail("test@example.com");
+        given(userService.getUserProfileDto(1)).willReturn(dummyDto);
+
+        // when
+        ResultActions result = mockMvc.perform(get(url));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(view().name("user/profile"))
+                .andExpect(model().attributeExists("userProfile"))
+        ;
     }
 
     @Test
@@ -336,12 +331,13 @@ class UserControllerTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         UserProfileUpdateDto dummyDto = new UserProfileUpdateDto();
-        dummyDto.setEmail("test@example.com");
-        given(userService.getUserProfileDto(1)).willReturn(dummyDto);
+        dummyDto.setNickname("newNickName");
+
+        doNothing().when(userService).updateUserProfile(dummyDto, 1);
 
         // when
         ResultActions result = mockMvc.perform(
-                post(url).param("nickname", "newNickname")
+                post(url).param("nickname", "newNickName")
         );
 
         // then

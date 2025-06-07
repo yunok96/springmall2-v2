@@ -5,7 +5,6 @@ import com.choi.springmall2.domain.dto.DeliveryAddressResponseDto;
 import com.choi.springmall2.domain.dto.DeliveryAddressUpdateDto;
 import com.choi.springmall2.domain.entity.DeliveryAddress;
 import com.choi.springmall2.domain.entity.User;
-import com.choi.springmall2.domain.vo.DeliveryAddressVo;
 import com.choi.springmall2.repository.DeliveryAddressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,38 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class DeliveryAddressService {
+
     private final DeliveryAddressRepository deliveryAddressRepository;
-
-    // 사용자 설정 배송지 정보 조회
-    public List<DeliveryAddress> getUserDeliveryAddress(int userId) {
-        return deliveryAddressRepository.findByUserId(userId);
-    }
-
-    /**
-     * 배송지 정보 List<Vo> 매핑
-     * @param deliveryAddresses 배송지 엔티티 리스트
-     * @return deliveryAddressVos 배송지 vo 리스트
-     */
-    public List<DeliveryAddressVo> getDeliveryAddressVos(List<DeliveryAddress> deliveryAddresses) {
-        if (deliveryAddresses == null || deliveryAddresses.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<DeliveryAddressVo> deliveryAddressVos = new ArrayList<>();
-        for (DeliveryAddress deliveryAddress : deliveryAddresses) {
-            DeliveryAddressVo deliveryAddressVo = new DeliveryAddressVo(
-                    deliveryAddress.getRecipientName(),
-                    deliveryAddress.getZipCode(),
-                    deliveryAddress.getAddressLine1(),
-                    deliveryAddress.getAddressLine2(),
-                    deliveryAddress.getPhoneNumber(),
-                    deliveryAddress.isDefault(),
-                    deliveryAddress.getCreateAt()
-            );
-            deliveryAddressVos.add(deliveryAddressVo);
-        }
-        return deliveryAddressVos;
-    }
 
     /**
      * 사용자 배송지 목록 DTO 반환
