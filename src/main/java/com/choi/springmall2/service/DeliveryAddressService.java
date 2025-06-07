@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,7 @@ public class DeliveryAddressService {
      * 배송지 정보 저장
      * @param deliveryAddressRegisterDto 배송지 정보 등록 DTO
      */
+    @Transactional
     public void saveDeliveryAddress(DeliveryAddressRegisterDto deliveryAddressRegisterDto, int userId) {
         User user = new User();
         user.setId(userId);
@@ -67,6 +69,11 @@ public class DeliveryAddressService {
         deliveryAddress.setDefault(deliveryAddressRegisterDto.isDefault());
         deliveryAddress.setUser(user);
 
+        // 해당 유저의 기존 기본배송지를 전부 해제
+        if (deliveryAddressRegisterDto.isDefault()) {
+            deliveryAddressRepository.clearDefaultAddress(userId);
+        }
+
         deliveryAddressRepository.save(deliveryAddress);
     }
 
@@ -75,6 +82,7 @@ public class DeliveryAddressService {
      * @param deliveryAddressUpdateDto 배송지 정보 수정 DTO
      * @throws IllegalArgumentException 배송지 정보를 찾을 수 없는 경우
      */
+    @Transactional
     public void updateDeliveryAddress(DeliveryAddressUpdateDto deliveryAddressUpdateDto, int userId) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(deliveryAddressUpdateDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
@@ -88,6 +96,11 @@ public class DeliveryAddressService {
 
         if ( deliveryAddress.getUser().getId() != userId) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        // 해당 유저의 기존 기본배송지를 전부 해제
+        if (deliveryAddressUpdateDto.isDefault()) {
+            deliveryAddressRepository.clearDefaultAddress(userId);
         }
 
         deliveryAddressRepository.save(deliveryAddress);
@@ -106,7 +119,17 @@ public class DeliveryAddressService {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
 
+        // Check if the address is default
+        boolean wasDefault = deliveryAddress.isDefault();
+
+        // Delete the address
         deliveryAddressRepository.delete(deliveryAddress);
+
+        // If the deleted address was default, set the first address as default
+        if (wasDefault) {
+            deliveryAddressRepository.findTopByUserIdOrderByIdAsc(userId)
+                    .ifPresent(a -> a.setDefault(true));
+        }
     }
 
 }
