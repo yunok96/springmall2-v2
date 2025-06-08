@@ -15,6 +15,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+        # --- Node.js setting ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # --- Node.js dependency install ---
+      - name: Install Node.js dependencies
+        run: npm install
+
+      # --- Jest test run and generate coverage ---
+      - name: Run Jest tests and generate coverage report
+        run: npm test -- --coverage
+
+      # --- Upload Jest coverage result to Codecov ---
+      - name: Upload coverage to Codecov (JS)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info
+          flags: js
+          fail_ci_if_error: true
+
+
       - name: Set up Java version
         uses: actions/setup-java@v4
         with:

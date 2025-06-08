@@ -1,4 +1,6 @@
-document.addEventListener("DOMContentLoaded", function () {
+export { initializeResetPassword };
+
+document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("reset-password").addEventListener("click", function () {
         initializeResetPassword();
     });
