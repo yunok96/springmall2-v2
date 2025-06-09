@@ -1,93 +1,92 @@
 /**
  * @jest-environment jsdom
+ * @typedef {import('jest').Mock} Mock
  */
 
-import fs from 'fs';
-import path from 'path';
+/** @type {jest.Mock} */
+global.fetch = jest.fn();
 
-// fetch mocking을 위해 설치 필요: npm install --save-dev whatwg-fetch
-import 'whatwg-fetch';
+import { errorHandler, loginUser } from '../../user/login.js';
 
-describe('login.js', () => {
-    let container;
-
-    beforeEach(() => {
-        // HTML 셋업
-        document.body.innerHTML = `
-      <form id="login">
-        <input type="email" id="email" value="test@example.com" />
-        <input type="password" id="password" value="password123" />
-        <button type="submit">Login</button>
-      </form>
+// DOM 초기화 & alert, window.location mocking
+beforeEach(() => {
+    document.body.innerHTML = `
+        <form id="login">
+            <input id="email" value="test@example.com" />
+            <input id="password" value="password123" />
+            <button type="submit">로그인</button>
+        </form>
     `;
 
-        // JS 코드 실행
-        const scriptContent = fs.readFileSync(path.resolve(__dirname, '../login.js'), 'utf8');
-        eval(scriptContent);
+    // alert, confirm, fetch, location.href 모킹
+    global.alert = jest.fn();
+    global.confirm = jest.fn();
+    global.fetch = jest.fn();
+});
 
-        // fetch 모킹 초기화
-        global.fetch = jest.fn();
-        jest.clearAllMocks();
+afterEach(() => {
+    jest.resetAllMocks();
+});
+
+describe('errorHandler', () => {
+
+    test('alerts 로그인 필요 메시지 when error=needLogin', () => {
+        // given
+        window.history.pushState({}, 'Test page', '/?error=needLogin');
+
+        // when
+        errorHandler("needLogin");
+
+        // then
+        expect(alert).toHaveBeenCalledWith('로그인이 필요한 기능입니다.');
     });
 
-    it('should alert when URL has error=needLogin', () => {
-        const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
-        delete window.location;
-        window.location = {
-            search: '?error=needLogin'
-        };
+    test('alert 표시 안함 when error!=needLogin', () => {
+        // given
+        window.history.pushState({}, 'Test page', '/');
 
-        // 트리거를 위해 이벤트 수동 실행
-        window.dispatchEvent(new Event('load'));
+        // when
+        errorHandler();
 
-        expect(alertMock).toHaveBeenCalledWith('로그인이 필요한 기능입니다.');
-        alertMock.mockRestore();
+        // then
+        expect(window.alert).not.toHaveBeenCalled();
     });
+});
 
-    it('should call fetch with correct data on form submit', async () => {
-        const mockResponse = {
-            ok: true,
-            json: async () => ({ token: 'fake-jwt' })
-        };
-        global.fetch.mockResolvedValue(mockResponse);
+describe('loginUser', () => {
 
-        const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
-        delete window.location;
-        window.location = { href: '' };
+    test('로그인 성공', async () => {
+        // given
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+            })
+        );
 
-        const form = document.getElementById('login');
-        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        // when
+        await expect(loginUser('test@example.com', 'password')).resolves.toBe(true);
 
-        // 비동기 반영
-        await new Promise(setImmediate);
-
-        expect(fetch).toHaveBeenCalledWith('/api/login', {
+        // then
+        expect(fetch).toHaveBeenCalledWith('/api/login', expect.objectContaining({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'test@example.com', password: 'password123' }),
-            credentials: 'include'
-        });
-
-        expect(alertMock).toHaveBeenCalledWith('로그인 완료');
-        expect(window.location.href).toBe('/');
-        alertMock.mockRestore();
+            body: JSON.stringify({ email: 'test@example.com', password: 'password' }),
+            credentials: 'include',
+        }));
     });
 
-    it('should alert on login failure', async () => {
-        global.fetch.mockResolvedValue({ ok: false });
+    test('로그인 실패', async () => {
+        // given
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+            })
+        );
 
-        const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
-        const errorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+        // when
+        const promise = loginUser('test@example.com', 'password');
 
-        const form = document.getElementById('login');
-        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-
-        await new Promise(setImmediate);
-
-        expect(alertMock).toHaveBeenCalledWith('로그인에 실패했습니다. 다시 시도하세요.');
-        expect(console.error).toHaveBeenCalled();
-
-        alertMock.mockRestore();
-        errorMock.mockRestore();
+       // then
+        await expect(promise).rejects.toThrow('로그인 실패');
     });
 });
