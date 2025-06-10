@@ -1,6 +1,6 @@
 export { errorHandler, loginUser };
 
-window.addEventListener('load', function () {
+document.addEventListener('DOMContentLoaded', function () {
     errorHandler();
     setupLoginForm();
 });
