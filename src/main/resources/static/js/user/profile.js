@@ -13,6 +13,8 @@ export {
     , createEditButton
     , createDeleteButton
     , deleteAddress
+    , setupFindAddressBtn
+    , daumApi
 };
 
 
@@ -21,10 +23,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     setupPostAddressButton();
     setupPutAddressButton();
     await loadAddressList();
+
+    setupFindAddressBtn();
 });
 
 // 주소 등록 모달 내부에서 "주소 찾기" 버튼 클릭 이벤트
-document.getElementById('findAddressBtn').addEventListener('click', () => {
+function setupFindAddressBtn() {
+    document.getElementById('findAddressBtn').addEventListener('click', () => {
+        daumApi();
+    });
+}
+
+function daumApi() {
     new daum.Postcode({
         oncomplete: function(data) {
             document.getElementById("zipCode").value = data.zonecode;
@@ -32,7 +42,7 @@ document.getElementById('findAddressBtn').addEventListener('click', () => {
             document.getElementById("addressLine2").focus();
         }
     }).open();
-});
+}
 
 // 비밀번호 초기화 버튼 세팅
 function setupPasswordResetButton() {

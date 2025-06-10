@@ -10,5 +10,8 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
   }
 }

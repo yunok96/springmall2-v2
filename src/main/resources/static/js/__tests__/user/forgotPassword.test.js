@@ -3,9 +3,6 @@
  * @typedef {import('jest').Mock} Mock
  */
 
-/** @type {jest.Mock} */
-global.fetch = jest.fn();
-
 import { initializeResetPassword } from '../../user/forgotPassword';  // 파일 경로 맞게 조정
 
 beforeEach(() => {

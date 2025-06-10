@@ -3,42 +3,23 @@
  * @typedef {import('jest').Mock} Mock
  */
 
-/** @type {jest.Mock} */
-global.fetch = jest.fn();
-
-import {
-    setupPasswordResetButton
-    , sendPasswordResetRequest
-    , setupPostAddressButton
-    , sendRegisteringAddress
-    , handleAddressRegisterSuccess
-    , handleAddressRegisterFailure
-    , setupPutAddressButton
-    , sendUpdatingAddress
-    , handleAddressUpdateSuccess
-    , handleAddressUpdateFailure
-    , loadAddressList
-    , createEditButton
-    , createDeleteButton
-    , deleteAddress
-} from '../../user/profile.js';
+import * as profileModule from '../../user/profile.js';
 
 // DOM 초기화 & alert, window.location mocking
 beforeEach(() => {
-    
-    // TODO : 테스트 코드 작성
-    document.body.innerHTML = `
-        <form id="login">
-            <input id="email" value="test@example.com" />
-            <input id="password" value="password123" />
-            <button type="submit">로그인</button>
-        </form>
-    `;
-
     // alert, confirm, fetch, location.href 모킹
     global.alert = jest.fn();
     global.confirm = jest.fn();
     global.fetch = jest.fn();
+
+    // Setup for preventing DOM error
+    document.body.innerHTML = `
+        <button id="resetPasswordBtn"></button>
+        <button id="findAddressBtn"></button>
+        <input id="zipCode" type="text" />
+        <input id="addressLine1" type="text" />
+        <input id="addressLine2" type="text" />
+    `;
 });
 
 afterEach(() => {
@@ -47,85 +28,69 @@ afterEach(() => {
 
 describe('setupPasswordResetButton', () => {
 
+    beforeEach(() => {
+        document.body.innerHTML = `<button id="resetPasswordBtn">비밀번호 초기화</button>`;
+
+        profileModule.sendPasswordResetRequest = jest.fn();
+    })
+
     test('confirm 누르지 않을 경우', () => {
         // given
-        window.history.pushState({}, 'Test page', '/?error=needLogin');
+        global.confirm.mockReturnValue(false);
+        profileModule.setupPasswordResetButton();
 
         // when
-        errorHandler("needLogin");
+        document.getElementById('resetPasswordBtn').click();
 
         // then
-        expect(alert).toHaveBeenCalledWith('로그인이 필요한 기능입니다.');
+        expect(profileModule.sendPasswordResetRequest).not.toHaveBeenCalled(); // 직접 모의한 함수 사용
+        expect(alert).not.toHaveBeenCalled();
     });
 
-    test('예외 발생 시', () => {
+    test('예외 발생 시', async () => {
         // given
-        window.history.pushState({}, 'Test page', '/');
+        global.confirm.mockReturnValue(true);
+        profileModule.sendPasswordResetRequest.mockRejectedValue(new Error("network error"));
+        profileModule.setupPasswordResetButton();
 
         // when
-        errorHandler();
+        document.getElementById('resetPasswordBtn').click();
+
+        await Promise.resolve();
+        await Promise.resolve();
 
         // then
-        expect(window.alert).not.toHaveBeenCalled();
+        expect(alert).toHaveBeenCalledWith("비밀번호 재설정 메일 발송 중 오류가 발생했습니다.");
     });
 
-    test('비밀번호 초기화 실패 시', () => {
+    test('비밀번호 초기화 실패 시', async () => {
         // given
-        window.history.pushState({}, 'Test page', '/');
+        global.confirm.mockReturnValue(true);
+        profileModule.sendPasswordResetRequest.mockResolvedValue({ ok: false });  // 이렇게 기존 spy에 mock값 지정
+        profileModule.setupPasswordResetButton();
 
         // when
-        errorHandler();
+        document.getElementById('resetPasswordBtn').click();
+
+        await Promise.resolve();
+        await Promise.resolve();
 
         // then
-        expect(window.alert).not.toHaveBeenCalled();
+        expect(alert).toHaveBeenCalledWith("비밀번호 초기화에 실패했습니다.");
     });
 
-    test('비밀번호 초기화 성공 시', () => {
+    test('비밀번호 초기화 성공 시', async () => {
         // given
-        window.history.pushState({}, 'Test page', '/');
+        global.confirm.mockReturnValue(true);
+        profileModule.sendPasswordResetRequest.mockResolvedValue({ ok: true });
+        profileModule.setupPasswordResetButton();
 
         // when
-        errorHandler();
+        document.getElementById('resetPasswordBtn').click();
+
+        await Promise.resolve();
 
         // then
-        expect(window.alert).not.toHaveBeenCalled();
-    });
-});
-
-describe('loginUser', () => {
-
-    test('로그인 성공', async () => {
-        // given
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-            })
-        );
-
-        // when
-        await expect(loginUser('test@example.com', 'password')).resolves.toBe(true);
-
-        // then
-        expect(fetch).toHaveBeenCalledWith('/api/login', expect.objectContaining({
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'test@example.com', password: 'password' }),
-            credentials: 'include',
-        }));
-    });
-
-    test('로그인 실패', async () => {
-        // given
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-            })
-        );
-
-        // when
-        const promise = loginUser('test@example.com', 'password');
-
-        // then
-        await expect(promise).rejects.toThrow('로그인 실패');
+        expect(alert).toHaveBeenCalledWith("비밀번호가 초기화되었습니다. 이메일을 확인하세요.");
     });
 });
