@@ -1,20 +1,12 @@
 export {
     setupPasswordResetButton
-    , sendPasswordResetRequest
     , setupPostAddressButton
-    , sendRegisteringAddress
-    , handleAddressRegisterSuccess
-    , handleAddressRegisterFailure
     , setupPutAddressButton
-    , sendUpdatingAddress
-    , handleAddressUpdateSuccess
-    , handleAddressUpdateFailure
     , loadAddressList
     , createEditButton
     , createDeleteButton
     , deleteAddress
     , setupFindAddressBtn
-    , daumApi
 };
 
 
@@ -28,20 +20,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 // 주소 등록 모달 내부에서 "주소 찾기" 버튼 클릭 이벤트
+// 테스트 제외. 카카오 API
 function setupFindAddressBtn() {
     document.getElementById('findAddressBtn').addEventListener('click', () => {
-        daumApi();
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById("zipCode").value = data.zonecode;
+                document.getElementById("addressLine1").value = data.roadAddress || data.jibunAddress;
+                document.getElementById("addressLine2").focus();
+            }
+        }).open();
     });
-}
-
-function daumApi() {
-    new daum.Postcode({
-        oncomplete: function(data) {
-            document.getElementById("zipCode").value = data.zonecode;
-            document.getElementById("addressLine1").value = data.roadAddress || data.jibunAddress;
-            document.getElementById("addressLine2").focus();
-        }
-    }).open();
 }
 
 // 비밀번호 초기화 버튼 세팅
@@ -49,7 +38,13 @@ function setupPasswordResetButton() {
     document.getElementById("resetPasswordBtn").addEventListener("click", async function () {
         if (confirm("비밀번호를 초기화하시겠습니까?\n초기화된 비밀번호가 이메일로 전송됩니다.")) {
             try {
-                const res = await sendPasswordResetRequest();
+                const res = await fetch("/request-password-reset", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
                 if (res.ok) {
                     alert("비밀번호가 초기화되었습니다. 이메일을 확인하세요.");
                 } else {
@@ -59,17 +54,6 @@ function setupPasswordResetButton() {
                 console.error(err);
                 alert("비밀번호 재설정 메일 발송 중 오류가 발생했습니다.");
             }
-        }
-    });
-}
-
-// 비밀번호 초기화 요청 전송
-function sendPasswordResetRequest() {
-    return fetch("/request-password-reset", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-Requested-With": "XMLHttpRequest"
         }
     });
 }
@@ -90,48 +74,34 @@ function setupPostAddressButton() {
         };
 
         try {
-            const response = await sendRegisteringAddress(data);
+            const response = await fetch("/api/address/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
             const result = await response.json();
 
             if (response.ok) {
-                handleAddressRegisterSuccess(result.message);
+                alert(result.message);
+
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById("addressRegisterModal"));
+                modal.hide();
+
+                // 폼 초기화
+                document.getElementById("postAddress").reset();
+
                 await loadAddressList(); // 주소 리스트 새로고침
             } else {
-                handleAddressRegisterFailure(result.message);
+                alert(result.message);
             }
         } catch (error) {
             console.error("에러 발생:", error);
             alert("오류가 발생했습니다.");
         }
     });
-}
-
-// 주소 등록 전송
-function sendRegisteringAddress(data) {
-    return fetch("/api/address/register", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    });
-}
-
-// 주소 등록 성공 시 처리 함수
-function handleAddressRegisterSuccess(resultMessage) {
-    alert(resultMessage);
-
-    // 모달 닫기
-    const modal = bootstrap.Modal.getInstance(document.getElementById("addressRegisterModal"));
-    modal.hide();
-
-    // 폼 초기화
-    document.getElementById("postAddress").reset();
-}
-
-// 주소 등록 실패 시 처리 함수
-function handleAddressRegisterFailure(resultMessage) {
-    alert(resultMessage);
 }
 
 // 주소 수정 이벤트
@@ -152,18 +122,30 @@ function setupPutAddressButton() {
         };
 
         try {
-            const response = await sendUpdatingAddress(data);
-
+            const response = await fetch("/api/address/update", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
             const result = await response.json();
 
             if (response.ok) {
-                handleAddressUpdateSuccess(result.message);
+                alert(result.message);
+
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById("addressUpdateModal")); // modal1 → 모달의 id
+                modal.hide();
+
+                // register form initialize
+                document.getElementById("putAddress").reset();
 
                 // refresh address list
                 await loadAddressList();
 
             } else {
-                handleAddressUpdateFailure(result.message);
+                alert(result.message);
             }
 
         } catch (error) {
@@ -172,34 +154,6 @@ function setupPutAddressButton() {
         }
     });
 }
-
-function sendUpdatingAddress(data) {
-    return fetch("/api/address/update", {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    });
-}
-
-// 주소 수정 성공 시 처리 함수
-function handleAddressUpdateSuccess(resultMessage) {
-    alert(resultMessage);
-
-    // 모달 닫기
-    const modal = bootstrap.Modal.getInstance(document.getElementById("addressUpdateModal")); // modal1 → 모달의 id
-    modal.hide();
-
-    // register form initialize
-    document.getElementById("putAddress").reset();
-}
-
-// 주소 수정 실패 시 처리 함수
-function handleAddressUpdateFailure(resultMessage) {
-    alert(resultMessage);
-}
-
 
 // 주소 목록 호출 API
 async function loadAddressList() {
@@ -373,5 +327,4 @@ async function deleteAddress(addressId) {
         console.error("에러 발생:", error);
         alert("오류가 발생했습니다.");
     }
-
 }
