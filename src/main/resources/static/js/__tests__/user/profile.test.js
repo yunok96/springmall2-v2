@@ -77,7 +77,6 @@ describe('setupPasswordResetButton', () => {
     });
 });
 
-
 describe('loadAddressList', () => {
 
     test('주소 목록 없는 경우', async () => {
@@ -141,5 +140,99 @@ describe('loadAddressList', () => {
         expect(list.querySelector(".btn-primary")).not.toBeNull(); // 수정 버튼
         expect(list.querySelector(".btn-danger")).not.toBeNull();  // 삭제 버튼
     });
+});
 
+describe('setupPostAddressButton', () => {
+
+    let form;
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+          <form id="postAddress">
+            <input name="recipientName" value="홍길동" />
+            <input name="zipCode" value="12345" />
+            <input name="addressLine1" value="서울시 강남구" />
+            <input name="addressLine2" value="101호" />
+            <input name="phoneNumber" value="010-1234-5678" />
+            <input type="checkbox" name="default" checked />
+            <button type="submit">제출</button>
+          </form>
+          <div id="addressRegisterModal" class="modal"></div>
+          <div id="addressList"></div>
+          <div id="noAddressAlert" class="d-none"></div>
+        `;
+
+        // 모달 관련 메서드 모킹
+        window.bootstrap = {
+            Modal: {
+                getInstance: () => ({
+                    hide: jest.fn(),
+                }),
+            },
+        };
+
+        form = document.getElementById("postAddress");
+    });
+
+
+    test('fetch 예외 발생 시', async () => {
+        // given
+        global.fetch = jest.fn(() =>
+            Promise.reject(new Error('Fetch failed'))
+        );
+
+        const submitEvent = new Event("submit");
+
+        module.setupPostAddressButton()
+
+        // when
+        form.dispatchEvent(submitEvent);
+        await Promise.resolve();
+
+        // then
+        expect(alert).toHaveBeenCalledWith("오류가 발생했습니다.");
+    });
+
+    test('fetch 결과가 Not Ok', async () => {
+        // given
+
+
+        // when
+
+
+        // then
+
+
+    });
+
+    test('fetch 결과가 Ok', async () => {
+        // given
+        const mockPrevent = jest.fn();
+
+        module.loadAddressList = jest.fn(() => Promise.resolve());
+
+        // fetch 모킹
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({ message: "주소 등록 성공" }),
+        });
+
+        const submitEvent = new Event("submit");
+        submitEvent.preventDefault = mockPrevent;
+
+        module.setupPostAddressButton()
+
+        // when
+        form.dispatchEvent(submitEvent);
+        await Promise.resolve();
+
+        // then
+        expect(global.fetch).toHaveBeenCalledWith("/api/address/register", expect.objectContaining({
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: expect.any(String),
+        }));
+        expect(alert).toHaveBeenCalledWith("주소 등록 성공");
+        // expect(module.loadAddressList).toHaveBeenCalled();
+    });
 });
