@@ -158,8 +158,8 @@ describe('setupPostAddressButton', () => {
             <button type="submit">제출</button>
           </form>
           <div id="addressRegisterModal" class="modal"></div>
-          <div id="addressList"></div>
           <div id="noAddressAlert" class="d-none"></div>
+          <div id="addressList" class="row row-cols-1 row-cols-md-2 g-4 d-none"></div>
         `;
 
         // 모달 관련 메서드 모킹
@@ -195,28 +195,14 @@ describe('setupPostAddressButton', () => {
 
     test('fetch 결과가 Not Ok', async () => {
         // given
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                json: () => Promise.resolve({ message: "주소 등록 실패" }),
+            })
+        );
 
-
-        // when
-
-
-        // then
-
-
-    });
-
-    test('fetch 결과가 Ok', async () => {
-        // given
         const mockPrevent = jest.fn();
-
-        module.loadAddressList = jest.fn(() => Promise.resolve());
-
-        // fetch 모킹
-        global.fetch = jest.fn().mockResolvedValue({
-            ok: true,
-            json: () => Promise.resolve({ message: "주소 등록 성공" }),
-        });
-
         const submitEvent = new Event("submit");
         submitEvent.preventDefault = mockPrevent;
 
@@ -225,14 +211,75 @@ describe('setupPostAddressButton', () => {
         // when
         form.dispatchEvent(submitEvent);
         await Promise.resolve();
+        await Promise.resolve();
 
         // then
+        expect(alert).toHaveBeenCalledWith("주소 등록 실패");
+    });
+
+    test('fetch 결과가 Ok', async () => {
+        // given
+        global.fetch.mockImplementation((url) => {
+            if (url.endsWith('/register')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({ message: "주소 등록 성공" }),
+                });
+            }
+
+            if (url.endsWith('/list')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => (
+                        [{
+                            id: 1,
+                        }]
+                    ),
+                });
+            }
+        });
+
+        const hideMock = jest.fn();
+        const getInstanceMock = jest.fn(() => ({
+            hide: hideMock,
+        }));
+        window.bootstrap = {
+            Modal: {
+                getInstance: getInstanceMock,
+            },
+        };
+
+        const mockPrevent = jest.fn();
+        const submitEvent = new Event("submit");
+        submitEvent.preventDefault = mockPrevent;
+
+        module.setupPostAddressButton()
+
+        // when
+        form.dispatchEvent(submitEvent);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        // then
+        // fetch 호출 검증
         expect(global.fetch).toHaveBeenCalledWith("/api/address/register", expect.objectContaining({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: expect.any(String),
         }));
+
+        // alert 호출 검증
         expect(alert).toHaveBeenCalledWith("주소 등록 성공");
-        // expect(module.loadAddressList).toHaveBeenCalled();
+
+        // 모달 숨김 검증
+        expect(getInstanceMock).toHaveBeenCalledWith(document.getElementById("addressRegisterModal"));
+        expect(hideMock).toHaveBeenCalled();
+
+        // input 리셋 검증
+        const input = document.querySelector('form#postAddress input[name="recipientName"]');
+        expect(input.value).toBe('');
+
+        // loadAddressList 호출 검증
+        expect(global.fetch).toHaveBeenCalledWith("/api/address/list");
     });
 });

@@ -91,7 +91,11 @@ function setupPostAddressButton() {
                 modal.hide();
 
                 // 폼 초기화
-                document.getElementById("postAddress").reset();
+                document.getElementById("postAddress").querySelectorAll('input').forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+                    else input.value = '';
+                });
+                // document.getElementById("postAddress").reset();
 
                 await loadAddressList(); // 주소 리스트 새로고침
             } else {
