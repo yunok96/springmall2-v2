@@ -62,18 +62,9 @@ https://springmall2-ghgvedckerfaaae3.koreacentral-01.azurewebsites.net
     ```
     또는 IDE에서 Spring Boot Application 실행
 
-## 실행 방법
-
-* 웹 브라우저에서 `http://localhost:8080` (또는 설정된 포트)으로 접속합니다.
-* 초기 사용자 생성 및 로그인 기능은 현재 개발 중입니다. (혹은 완료되었다면 간단한 안내)
-
 ## 기여 방법
 
 현재 개인 프로젝트로 진행 중입니다. 추후 협업 기회가 생긴다면 기여 방법에 대한 안내를 추가할 예정입니다.
-
-## 라이선스
-
-[MIT](https://opensource.org/licenses/MIT) (원하는 라이선스를 명시하거나 추후 결정이라고 작성)
 
 ## Contact
 yunok96@naver.com
